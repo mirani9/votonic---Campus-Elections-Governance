@@ -1,0 +1,100 @@
+{
+  "users": [
+    {
+      "id": "STU001",
+      "password": "password123",
+      "name": "Alex Mercer",
+      "role": "STUDENT"
+    },
+    {
+      "id": "STU002",
+      "password": "password123",
+      "name": "Bob Smith",
+      "role": "STUDENT"
+    },
+    {
+      "id": "CAND001",
+      "password": "password123",
+      "name": "Alice Johnson",
+      "role": "CANDIDATE"
+    },
+    {
+      "id": "CAND002",
+      "password": "password123",
+      "name": "Carol Williams",
+      "role": "CANDIDATE"
+    },
+    {
+      "id": "ADMIN001",
+      "password": "adminpassword",
+      "name": "System Admin",
+      "role": "ADMIN"
+    },
+    {
+      "id": "stu2028-01",
+      "password": "abc",
+      "name": "abc",
+      "role": "STUDENT"
+    },
+    {
+      "id": "stu01",
+      "password": "abc",
+      "name": "abc",
+      "role": "STUDENT"
+    },
+    {
+      "id": "stu02",
+      "password": "abc",
+      "name": "abc",
+      "role": "STUDENT"
+    },
+    {
+      "id": "stu03",
+      "password": "abc",
+      "name": "abc",
+      "role": "STUDENT"
+    }
+  ],
+  "elections": [
+    {
+      "id": "elec-1",
+      "title": "Sports Secretary 2027",
+      "description": "Lead campus athletics and annual sports fest.",
+      "deadline": "2026-11-20",
+      "status": "CLOSED"
+    },
+    {
+      "id": "elec-2",
+      "title": "Cultural Club Head",
+      "description": "Manage cultural events and annual fest.",
+      "deadline": "2026-12-05",
+      "status": "OPEN"
+    },
+    {
+      "id": "elec-1794374721728",
+      "title": "sports",
+      "description": "abc",
+      "deadline": "2026-11-12",
+      "status": "OPEN"
+    }
+  ],
+  "nominations": [
+    {
+      "id": "nom-1",
+      "electionId": "elec-1",
+      "candidateId": "CAND001",
+      "candidateName": "Alice Johnson",
+      "manifesto": "Better equipment and transparent sports budget.",
+      "status": "ACCEPTED"
+    },
+    {
+      "id": "nom-2",
+      "electionId": "elec-1",
+      "candidateId": "CAND002",
+      "candidateName": "Carol Williams",
+      "manifesto": "More inter-college tournaments and coaching.",
+      "status": "PENDING"
+    }
+  ],
+  "votes": []
+}

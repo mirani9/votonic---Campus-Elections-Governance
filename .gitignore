@@ -1,4 +1,3 @@
-node_modules/
-*.db
-*.db-journal
+node_modules
+poll_store.json
 .env
