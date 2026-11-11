@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VOTONIC — Campus Elections & Governance</title>
+  <title>VOTONIC â€” Campus Elections & Governance</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
@@ -11,7 +11,7 @@
   <!-- Navigation Header -->
   <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center">
     <div class="flex items-center gap-3 cursor-pointer" onclick="nav('landing')">
-      <span class="text-2xl">🎓</span>
+      <span class="text-2xl">ðŸŽ“</span>
       <div>
         <h1 class="text-xl font-bold tracking-wide text-white">VOTONIC</h1>
         <p id="currentUserBadge" class="text-xs text-indigo-400">Campus Governance</p>
@@ -35,7 +35,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
       <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
         <div class="space-y-3">
-          <div class="text-4xl">🎓</div>
+          <div class="text-4xl">ðŸŽ“</div>
           <h3 class="text-xl font-bold text-white">1. Student Portal</h3>
           <p class="text-xs text-slate-400 leading-relaxed">Login with Student Roll ID & Password to cast your vote.</p>
           <p class="text-xs font-bold pt-1">Status: <span id="portalStatusStudent" class="text-emerald-400">OPEN</span></p>
@@ -47,7 +47,7 @@
 
       <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
         <div class="space-y-3">
-          <div class="text-4xl">📝</div>
+          <div class="text-4xl">ðŸ“</div>
           <h3 class="text-xl font-bold text-white">2. Candidate Portal</h3>
           <p class="text-xs text-slate-400 leading-relaxed">Submit nomination & view approved manifestos.</p>
           <p class="text-xs font-bold pt-1">Status: <span id="portalStatusCandidate" class="text-emerald-400">OPEN</span></p>
@@ -59,7 +59,7 @@
 
       <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
         <div class="space-y-3">
-          <div class="text-4xl">⚙</div>
+          <div class="text-4xl">âš™</div>
           <h3 class="text-xl font-bold text-white">3. Administrative Portal</h3>
           <p class="text-xs text-slate-400 leading-relaxed">Approve nominations & close elections.</p>
           <p class="text-xs font-bold pt-1">Status: <span id="portalStatusAdmin" class="text-emerald-400">OPEN</span></p>
@@ -75,7 +75,7 @@
   <section id="view-student-login" class="hidden max-w-md mx-auto py-16 px-6">
     <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
       <div class="border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white">🎓 Student Login</h2>
+        <h2 class="text-xl font-bold text-white">ðŸŽ“ Student Login</h2>
         <p class="text-xs text-slate-400 mt-1">Enter your Roll ID and Password</p>
       </div>
       <div class="space-y-4">
@@ -88,7 +88,7 @@
           <input type="password" id="loginStudentPass" value="123" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
         </div>
         <button onclick="doLogin('STUDENT')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
-          Login to Student Kiosk
+          Login to Student Portal
         </button>
       </div>
     </div>
@@ -98,7 +98,7 @@
   <section id="view-admin-login" class="hidden max-w-md mx-auto py-16 px-6">
     <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
       <div class="border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white">⚙ Administrative Login</h2>
+        <h2 class="text-xl font-bold text-white">âš™ Administrative Login</h2>
         <p class="text-xs text-slate-400 mt-1">Enter Admin Credentials</p>
       </div>
       <div class="space-y-4">
@@ -120,7 +120,7 @@
   <!-- 4. STUDENT VOTING KIOSK -->
   <section id="view-student-kiosk" class="hidden max-w-4xl mx-auto py-10 px-6 space-y-6">
     <div class="border-b border-slate-800 pb-4">
-      <h2 class="text-2xl font-bold text-white">🎓 Student Voting Kiosk</h2>
+      <h2 class="text-2xl font-bold text-white">ðŸŽ“ Student Voting Kiosk</h2>
       <p class="text-xs text-slate-400">Cast one vote per specific election.</p>
     </div>
 
@@ -142,7 +142,7 @@
   <!-- 5. ADMIN CONTROL CENTER -->
   <section id="view-admin-center" class="hidden max-w-5xl mx-auto py-10 px-6 space-y-8">
     <div class="border-b border-slate-800 pb-4">
-      <h2 class="text-2xl font-bold text-white">⚙ Administrative Control Center</h2>
+      <h2 class="text-2xl font-bold text-white">âš™ Administrative Control Center</h2>
       <p class="text-xs text-slate-400">Manage elections, review candidate nominations, and add users.</p>
     </div>
 
@@ -210,7 +210,7 @@
   <!-- 6. CANDIDATE PORTAL VIEW -->
   <section id="view-candidate-portal" class="hidden max-w-4xl mx-auto py-10 px-6 space-y-6">
     <div class="border-b border-slate-800 pb-4">
-      <h2 class="text-2xl font-bold text-white">📝 Candidate Leaderboard & Manifestos</h2>
+      <h2 class="text-2xl font-bold text-white">ðŸ“ Candidate Leaderboard & Manifestos</h2>
     </div>
     <div id="candidateLeaderboard" class="space-y-3"></div>
   </section>
