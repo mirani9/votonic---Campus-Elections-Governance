@@ -13,7 +13,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 const DB_FILE = path.join(__dirname, 'poll_store.json');
 
 let db = {
-  globalStatus: "OPEN", // Master state synchronized across all portals
+  globalStatus: "OPEN",
+  users: [
+    { id: "ADMIN001", name: "System Admin", role: "ADMIN", password: "admin" },
+    { id: "STUDENT001", name: "Alex Mercer", role: "STUDENT", password: "123" }
+  ],
   elections: [
     { id: "el-1", title: "Sports Secretary 2027", description: "Lead campus athletics", deadline: "2026-11-20", status: "CLOSED" },
     { id: "el-2", title: "Cultural Club Head", description: "Manage campus festivals", deadline: "2026-12-05", status: "OPEN" },
@@ -33,7 +37,7 @@ if (fs.existsSync(DB_FILE)) {
     const loaded = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
     if (loaded) db = Object.assign(db, loaded);
   } catch (e) {
-    console.log("Initializing fresh JSON store...");
+    console.log("Initializing store...");
   }
 }
 
@@ -47,7 +51,6 @@ function broadcastEvent(eventType, payload) {
   clients.forEach(c => c.res.write(`data: ${data}\n\n`));
 }
 
-// Global Poll Status (Syncs ALL Portals)
 app.get('/api/poll/status', (req, res) => {
   res.json({ status: db.globalStatus, elections: db.elections });
 });
@@ -81,44 +84,47 @@ app.post('/api/poll/close', (req, res) => {
 });
 
 app.get('/api/elections', (req, res) => {
-  res.json({ globalStatus: db.globalStatus, elections: db.elections });
+  res.json(db.elections);
 });
 
-app.post('/api/elections/status', (req, res) => {
-  const { election_id, status } = req.body;
-  const el = db.elections.find(e => e.id === election_id);
-  if (el) {
-    el.status = status;
-    saveDB();
-    broadcastEvent('poll_state_changed', { election_id, status });
-  }
-  res.json({ status: "SUCCESS" });
+app.post('/api/elections', (req, res) => {
+  const { title, description, deadline } = req.body;
+  const newEl = { id: 'el-' + Date.now(), title, description: description || '', deadline: deadline || '2026-11-20', status: 'OPEN' };
+  db.elections.push(newEl);
+  saveDB();
+  broadcastEvent('poll_state_changed', { status: 'OPEN' });
+  res.json(newEl);
 });
 
 app.get('/api/candidates', (req, res) => {
   const { election_id } = req.query;
   let list = db.candidates;
-  if (election_id) {
-    list = list.filter(c => c.election_id === election_id);
-  }
+  if (election_id) list = list.filter(c => c.election_id === election_id);
   res.json(list);
 });
 
 app.post('/api/candidates/review', (req, res) => {
   const { candidate_id, status } = req.body;
-  const candidate = db.candidates.find(c => c.id === candidate_id);
-  if (candidate) {
-    candidate.status = status;
+  const cand = db.candidates.find(c => c.id === candidate_id);
+  if (cand) {
+    cand.status = status;
     saveDB();
     broadcastEvent('nomination_reviewed', { candidate_id, status });
   }
   res.json({ status: "SUCCESS" });
 });
 
+app.post('/api/users', (req, res) => {
+  const { roll, password, name, role } = req.body;
+  const newUser = { id: roll, name, role: role || 'STUDENT', password: password || '123' };
+  db.users.push(newUser);
+  saveDB();
+  res.json(newUser);
+});
+
 app.post('/api/vote', (req, res) => {
   const { voter_id, candidate_id, election_id } = req.body;
 
-  // Enforce global or specific election closure check across all portals
   if (db.globalStatus === 'CLOSED') {
     return res.status(403).json({ error: "All campus elections are currently CLOSED by System Admin." });
   }
@@ -132,16 +138,16 @@ app.post('/api/vote', (req, res) => {
 
   const existing = db.votes.find(v => v.voter_id === voter_id && (!election_id || v.election_id === election_id));
   if (existing) {
-    return res.status(429).json({ error: "Duplicate vote rejected. Voter has already participated." });
+    return res.status(429).json({ error: "Duplicate vote rejected. You have already voted." });
   }
 
-  const candidate = db.candidates.find(c => c.id === candidate_id && c.status === 'ACCEPTED');
-  if (!candidate) {
+  const cand = db.candidates.find(c => c.id === candidate_id && c.status === 'ACCEPTED');
+  if (!cand) {
     return res.status(404).json({ error: "Invalid or unapproved candidate." });
   }
 
   db.votes.push({ voter_id, candidate_id, election_id, created_at: new Date().toISOString() });
-  candidate.votes++;
+  cand.votes++;
   saveDB();
 
   broadcastEvent('vote_persisted', { voter_id, candidate_id, election_id });
@@ -151,10 +157,9 @@ app.post('/api/vote', (req, res) => {
 app.get('/api/stats', (req, res) => {
   res.json({
     persisted_votes: db.votes.length,
-    rate_limited_requests: 0,
-    queue_depth: 0,
-    pending_votes: 0,
-    failed_votes: 0
+    total_elections: db.elections.length,
+    pending_nominations: db.candidates.filter(c => c.status === 'PENDING').length,
+    total_users: db.users.length
   });
 });
 
@@ -174,6 +179,6 @@ app.get('/api/events', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`\n==================================================`);
-  console.log(`[VOTONIC Engine] Synchronized at http://localhost:${PORT}`);
+  console.log(`[VOTONIC Engine] Synchronized on http://localhost:${PORT}`);
   console.log(`==================================================\n`);
 });

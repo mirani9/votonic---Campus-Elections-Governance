@@ -6,22 +6,26 @@
   <title>VOTONIC — Campus Elections & Governance</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
-  
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
+
   <!-- Navigation Header -->
-  <header class="bg-slate-950 border-b border-slate-800 px-8 py-4 flex justify-between items-center">
-    <div class="flex items-center gap-3">
+  <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="nav('landing')">
       <span class="text-2xl">🎓</span>
-      <h1 class="text-xl font-bold tracking-wide text-white">VOTONIC</h1>
+      <div>
+        <h1 class="text-xl font-bold tracking-wide text-white">VOTONIC</h1>
+        <p id="currentUserBadge" class="text-xs text-indigo-400">Campus Governance</p>
+      </div>
     </div>
-    <nav class="flex gap-6 text-sm font-medium text-slate-300">
-      <button onclick="nav('landing')" id="nav-landing" class="text-indigo-400 font-semibold cursor-pointer hover:text-indigo-300">🏛 Main Portals</button>
-      <button onclick="nav('winners')" id="nav-winners" class="cursor-pointer hover:text-indigo-400">🏆 Previous Winners</button>
-      <button onclick="nav('dashboard')" id="nav-dashboard" class="cursor-pointer hover:text-indigo-400">📊 Live System Stats</button>
-    </nav>
+    <div class="flex items-center gap-4 text-xs font-semibold">
+      <button onclick="nav('landing')" class="text-slate-300 hover:text-white">Main Portals</button>
+      <button onclick="nav('student-login')" class="text-slate-300 hover:text-white">Student Login</button>
+      <button onclick="nav('admin-login')" class="text-slate-300 hover:text-white">Admin Login</button>
+      <button onclick="logout()" id="btnLogout" class="hidden text-rose-400 hover:text-rose-300">Logout</button>
+    </div>
   </header>
 
-  <!-- MAIN PORTALS LANDING VIEW -->
+  <!-- 1. MAIN PORTALS LANDING -->
   <main id="view-landing" class="max-w-5xl mx-auto py-12 px-6 space-y-8">
     <div class="text-center space-y-2">
       <h2 class="text-3xl font-black text-white">Campus Elections & Governance</h2>
@@ -29,232 +33,322 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-      <!-- 1. Student Portal Card -->
-      <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
+      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
         <div class="space-y-3">
           <div class="text-4xl">🎓</div>
           <h3 class="text-xl font-bold text-white">1. Student Portal</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Login with Student Roll ID & DOB to cast your vote.</p>
-          <p class="text-xs font-bold pt-1">Status: <span id="portal-status-student" class="text-emerald-400">OPEN</span></p>
+          <p class="text-xs text-slate-400 leading-relaxed">Login with Student Roll ID & Password to cast your vote.</p>
+          <p class="text-xs font-bold pt-1">Status: <span id="portalStatusStudent" class="text-emerald-400">OPEN</span></p>
         </div>
-        <button onclick="nav('student')" class="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition cursor-pointer shadow-md">
+        <button onclick="nav('student-login')" class="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition cursor-pointer">
           Student Login
         </button>
       </div>
 
-      <!-- 2. Candidate Portal Card -->
-      <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
+      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
         <div class="space-y-3">
           <div class="text-4xl">📝</div>
           <h3 class="text-xl font-bold text-white">2. Candidate Portal</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Login to submit nomination & manifestos.</p>
-          <p class="text-xs font-bold pt-1">Status: <span id="portal-status-candidate" class="text-emerald-400">OPEN</span></p>
+          <p class="text-xs text-slate-400 leading-relaxed">Submit nomination & view approved manifestos.</p>
+          <p class="text-xs font-bold pt-1">Status: <span id="portalStatusCandidate" class="text-emerald-400">OPEN</span></p>
         </div>
-        <button onclick="nav('candidate')" class="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer shadow-md">
-          Candidate Login
+        <button onclick="nav('candidate-portal')" class="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer">
+          Candidate Portal
         </button>
       </div>
 
-      <!-- 3. Administrative Portal Card -->
-      <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
+      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
         <div class="space-y-3">
           <div class="text-4xl">⚙</div>
           <h3 class="text-xl font-bold text-white">3. Administrative Portal</h3>
           <p class="text-xs text-slate-400 leading-relaxed">Approve nominations & close elections.</p>
-          <p class="text-xs font-bold pt-1">Master Control Status: <span id="portal-status-admin" class="text-emerald-400">OPEN</span></p>
+          <p class="text-xs font-bold pt-1">Status: <span id="portalStatusAdmin" class="text-emerald-400">OPEN</span></p>
         </div>
-        <button onclick="nav('admin')" class="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer shadow-md">
+        <button onclick="nav('admin-login')" class="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer">
           Administrative Login
         </button>
       </div>
     </div>
   </main>
 
-  <!-- STUDENT PORTAL VIEW -->
-  <section id="view-student" class="hidden max-w-xl mx-auto py-12 px-6">
-    <div class="bg-slate-950 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">🎓 Student Voting Kiosk</h2>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
+  <!-- 2. STUDENT LOGIN PAGE -->
+  <section id="view-student-login" class="hidden max-w-md mx-auto py-16 px-6">
+    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+      <div class="border-b border-slate-800 pb-4">
+        <h2 class="text-xl font-bold text-white">🎓 Student Login</h2>
+        <p class="text-xs text-slate-400 mt-1">Enter your Roll ID and Password</p>
       </div>
-      
       <div class="space-y-4">
-        <div class="p-3 bg-slate-900 rounded border border-slate-800 flex justify-between items-center">
-          <span class="text-xs font-semibold text-slate-400">Global Election Status</span>
-          <span id="studentGlobalBadge" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">User ID / Roll Number</label>
+          <input type="text" id="loginStudentRoll" value="STUDENT001" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Student Roll ID</label>
-          <input type="text" id="voterId" value="STUDENT-2026-01" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
+          <input type="password" id="loginStudentPass" value="123" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Select Candidate</label>
-          <select id="candSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"></select>
-        </div>
-        <button id="btnVote" onclick="castVote()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-semibold text-sm rounded-lg transition cursor-pointer">
-          Cast Official Vote
+        <button onclick="doLogin('STUDENT')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
+          Login to Student Kiosk
         </button>
-        <p id="voteRes" class="text-xs font-semibold text-center mt-2"></p>
       </div>
     </div>
   </section>
 
-  <!-- CANDIDATE PORTAL VIEW -->
-  <section id="view-candidate" class="hidden max-w-2xl mx-auto py-12 px-6">
-    <div class="bg-slate-950 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">📝 Candidate Leaderboard & Manifestos</h2>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
+  <!-- 3. ADMIN LOGIN PAGE -->
+  <section id="view-admin-login" class="hidden max-w-md mx-auto py-16 px-6">
+    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+      <div class="border-b border-slate-800 pb-4">
+        <h2 class="text-xl font-bold text-white">⚙ Administrative Login</h2>
+        <p class="text-xs text-slate-400 mt-1">Enter Admin Credentials</p>
       </div>
-      <div id="candidateLeaderboard" class="space-y-3"></div>
-    </div>
-  </section>
-
-  <!-- ADMIN PORTAL VIEW -->
-  <section id="view-admin" class="hidden max-w-2xl mx-auto py-12 px-6">
-    <div class="bg-slate-950 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">⚙ Administrative Governance</h2>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-      </div>
-      <div class="flex items-center justify-between p-4 bg-slate-900 rounded-xl border border-slate-800">
+      <div class="space-y-4">
         <div>
-          <p class="text-sm font-semibold text-white">Master Election Status Across All Portals</p>
-          <p id="pollBadge" class="text-xs text-emerald-400 font-bold mt-0.5">OPEN</p>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Admin User ID</label>
+          <input type="text" id="loginAdminRoll" value="ADMIN001" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
         </div>
-        <div class="flex gap-3">
-          <button onclick="togglePoll(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold cursor-pointer">Open All Elections</button>
-          <button onclick="togglePoll(false)" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-semibold cursor-pointer">Close All Elections</button>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
+          <input type="password" id="loginAdminPass" value="admin" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
         </div>
-      </div>
-      
-      <div class="pt-4 border-t border-slate-800 space-y-3">
-        <h3 class="text-sm font-bold text-white">Specific Campus Elections</h3>
-        <div id="adminElectionsList" class="space-y-2"></div>
+        <button onclick="doLogin('ADMIN')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
+          Login to Admin Center
+        </button>
       </div>
     </div>
   </section>
 
-  <!-- PREVIOUS WINNERS VIEW -->
-  <section id="view-winners" class="hidden max-w-3xl mx-auto py-12 px-6">
-    <div class="bg-slate-950 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">🏆 Previous Campus Election Winners</h2>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
+  <!-- 4. STUDENT VOTING KIOSK -->
+  <section id="view-student-kiosk" class="hidden max-w-4xl mx-auto py-10 px-6 space-y-6">
+    <div class="border-b border-slate-800 pb-4">
+      <h2 class="text-2xl font-bold text-white">🎓 Student Voting Kiosk</h2>
+      <p class="text-xs text-slate-400">Cast one vote per specific election.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+        <h3 class="font-bold text-white text-md">1. Select Election</h3>
+        <div id="studentElectionsList" class="space-y-2"></div>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800">
-          <p class="text-xs text-indigo-400 font-bold">2025 Student Council President</p>
-          <p class="text-lg font-bold text-white mt-1">Alice Johnson</p>
-          <p class="text-xs text-slate-400 mt-1">Total Votes: 1,420</p>
-        </div>
-        <div class="p-4 bg-slate-900 rounded-xl border border-slate-800">
-          <p class="text-xs text-indigo-400 font-bold">2024 Student Council President</p>
-          <p class="text-lg font-bold text-white mt-1">Bob Smith</p>
-          <p class="text-xs text-slate-400 mt-1">Total Votes: 1,180</p>
-        </div>
+
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+        <h3 class="font-bold text-white text-md">2. Approved Nominees</h3>
+        <div id="selectedElectionDetails" class="text-xs text-slate-400 p-3 bg-slate-950 rounded border border-slate-800 hidden"></div>
+        <div id="nomineesList" class="space-y-3"></div>
+        <p id="voteStatusMsg" class="text-xs font-semibold mt-2"></p>
       </div>
     </div>
   </section>
 
-  <!-- LIVE SYSTEM DASHBOARD VIEW -->
-  <section id="view-dashboard" class="hidden max-w-5xl mx-auto py-12 px-6 space-y-6">
-    <div class="flex justify-between items-center">
-      <h2 class="text-2xl font-bold text-white">📊 System Telemetry & Metrics</h2>
-      <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back to Main Portals</button>
+  <!-- 5. ADMIN CONTROL CENTER -->
+  <section id="view-admin-center" class="hidden max-w-5xl mx-auto py-10 px-6 space-y-8">
+    <div class="border-b border-slate-800 pb-4">
+      <h2 class="text-2xl font-bold text-white">⚙ Administrative Control Center</h2>
+      <p class="text-xs text-slate-400">Manage elections, review candidate nominations, and add users.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Persisted Votes</p>
-        <p id="metricPersisted" class="text-2xl font-black text-emerald-400 mt-1">0</p>
+    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 flex justify-between items-center">
+      <div>
+        <p class="text-sm font-bold text-white">Master Campus Election Lock</p>
+        <p class="text-xs text-slate-400">Global State across all portals: <span id="adminMasterStatus" class="font-bold text-emerald-400">OPEN</span></p>
       </div>
-      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Rate-Limited</p>
-        <p id="metricRateLimited" class="text-2xl font-black text-rose-400 mt-1">0</p>
-      </div>
-      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Queue Depth</p>
-        <p id="metricQueue" class="text-2xl font-black text-amber-400 mt-1">0</p>
-      </div>
-      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Pending Votes</p>
-        <p id="metricPending" class="text-2xl font-black text-indigo-400 mt-1">0</p>
-      </div>
-      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Failed Votes</p>
-        <p id="metricFailed" class="text-2xl font-black text-slate-400 mt-1">0</p>
+      <div class="flex gap-3">
+        <button onclick="toggleMasterPoll(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg cursor-pointer">Open All Elections</button>
+        <button onclick="toggleMasterPoll(false)" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-lg cursor-pointer">Close All Elections</button>
       </div>
     </div>
 
-    <div class="bg-slate-950 p-6 rounded-xl border border-slate-800">
-      <h3 class="font-bold text-white text-sm mb-3">Live Event Log</h3>
-      <div id="eventsLog" class="h-48 overflow-y-auto font-mono text-xs bg-slate-900 p-3 rounded space-y-1 text-slate-300"></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+        <h3 class="font-bold text-white text-md">Open New Campus Election</h3>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Election Name / Title</label>
+          <input type="text" id="elTitle" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Description</label>
+          <input type="text" id="elDesc" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Closing Deadline Date</label>
+          <input type="date" id="elDeadline" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+        </div>
+        <button onclick="createElection()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-semibold text-xs cursor-pointer">Create & Publish Election</button>
+      </div>
+
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+        <h3 class="font-bold text-white text-md">Add New Batch User</h3>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">User ID (Roll Number)</label>
+          <input type="text" id="uRoll" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Full Name</label>
+          <input type="text" id="uName" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Role</label>
+          <select id="uRole" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+            <option value="STUDENT">STUDENT</option>
+            <option value="CANDIDATE">CANDIDATE</option>
+          </select>
+        </div>
+        <button onclick="createUser()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded font-semibold text-xs cursor-pointer">Create User Account</button>
+      </div>
     </div>
+
+    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+      <h3 class="font-bold text-white text-md">All Campus Elections</h3>
+      <div id="adminElectionsList" class="space-y-3"></div>
+    </div>
+
+    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
+      <h3 class="font-bold text-white text-md">Review Pending Candidate Nominations</h3>
+      <div id="pendingNominationsList" class="space-y-3"></div>
+    </div>
+  </section>
+
+  <!-- 6. CANDIDATE PORTAL VIEW -->
+  <section id="view-candidate-portal" class="hidden max-w-4xl mx-auto py-10 px-6 space-y-6">
+    <div class="border-b border-slate-800 pb-4">
+      <h2 class="text-2xl font-bold text-white">📝 Candidate Leaderboard & Manifestos</h2>
+    </div>
+    <div id="candidateLeaderboard" class="space-y-3"></div>
   </section>
 
   <script>
-    let isGlobalOpen = true;
+    let activeUser = null;
+    let activeElectionId = null;
 
     function nav(target) {
-      ['landing', 'student', 'candidate', 'admin', 'winners', 'dashboard'].forEach(v => {
-        document.getElementById('view-' + v).classList.add('hidden');
+      ['landing', 'student-login', 'admin-login', 'student-kiosk', 'admin-center', 'candidate-portal'].forEach(v => {
+        const el = document.getElementById('view-' + v);
+        if (el) el.classList.add('hidden');
       });
       document.getElementById('view-' + target).classList.remove('hidden');
+    }
+
+    function doLogin(role) {
+      if (role === 'STUDENT') {
+        const roll = document.getElementById('loginStudentRoll').value;
+        activeUser = { id: roll, role: 'STUDENT' };
+        document.getElementById('currentUserBadge').innerText = roll + ' (STUDENT)';
+        document.getElementById('btnLogout').classList.remove('hidden');
+        nav('student-kiosk');
+      } else {
+        const roll = document.getElementById('loginAdminRoll').value;
+        activeUser = { id: roll, role: 'ADMIN' };
+        document.getElementById('currentUserBadge').innerText = 'System Admin (ADMIN)';
+        document.getElementById('btnLogout').classList.remove('hidden');
+        nav('admin-center');
+      }
+      syncGlobalState();
+    }
+
+    function logout() {
+      activeUser = null;
+      document.getElementById('currentUserBadge').innerText = 'Campus Governance';
+      document.getElementById('btnLogout').classList.add('hidden');
+      nav('landing');
     }
 
     async function syncGlobalState() {
       try {
         const res = await fetch('/api/poll/status');
         const data = await res.json();
-        isGlobalOpen = data.status === 'OPEN';
+        const isOpen = data.status === 'OPEN';
 
-        // Update all Portal badges across landing, student & admin
-        ['student', 'candidate', 'admin'].forEach(p => {
-          const el = document.getElementById('portal-status-' + p);
+        ['Student', 'Candidate', 'Admin'].forEach(p => {
+          const el = document.getElementById('portalStatus' + p);
           if (el) {
-            el.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
-            el.className = isGlobalOpen ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+            el.innerText = isOpen ? 'OPEN' : 'CLOSED';
+            el.className = isOpen ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
           }
         });
 
-        const sBadge = document.getElementById('studentGlobalBadge');
-        if (sBadge) {
-          sBadge.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
-          sBadge.className = isGlobalOpen ? 'text-xs font-bold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800' : 'text-xs font-bold px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+        const mBadge = document.getElementById('adminMasterStatus');
+        if (mBadge) {
+          mBadge.innerText = isOpen ? 'OPEN' : 'CLOSED';
+          mBadge.className = isOpen ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
         }
 
-        const aBadge = document.getElementById('pollBadge');
-        if (aBadge) {
-          aBadge.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
-          aBadge.className = isGlobalOpen ? 'text-xs text-emerald-400 font-bold mt-0.5' : 'text-xs text-rose-400 font-bold mt-0.5';
-        }
-
-        const btnVote = document.getElementById('btnVote');
-        if (btnVote) btnVote.disabled = !isGlobalOpen;
-
-        if (data.elections) {
-          const list = document.getElementById('adminElectionsList');
-          if (list) {
-            list.innerHTML = '';
-            data.elections.forEach(e => {
-              const isOpen = e.status === 'OPEN';
-              list.innerHTML += `
-                <div class="flex justify-between items-center p-2.5 bg-slate-900 rounded border border-slate-800 text-xs">
-                  <span>${e.title}</span>
-                  <button onclick="toggleSingleElection('${e.id}', '${isOpen ? 'CLOSED' : 'OPEN'}')" class="px-2.5 py-1 ${isOpen ? 'bg-rose-600' : 'bg-emerald-600'} text-white rounded font-semibold cursor-pointer">
-                    ${isOpen ? 'Close' : 'Open'}
-                  </button>
-                </div>`;
-            });
-          }
-        }
+        loadAdminData();
       } catch(e) {}
     }
 
-    async function togglePoll(open) {
+    async function toggleMasterPoll(open) {
       await fetch(open ? '/api/poll/open' : '/api/poll/close', { method: 'POST' });
       syncGlobalState();
+    }
+
+    async function loadAdminData() {
+      const resE = await fetch('/api/elections');
+      const elections = await resE.json();
+      
+      const elList = document.getElementById('adminElectionsList');
+      const stList = document.getElementById('studentElectionsList');
+      if (elList) elList.innerHTML = '';
+      if (stList) stList.innerHTML = '';
+
+      elections.forEach(e => {
+        const isEOpen = e.status === 'OPEN';
+        if (elList) {
+          elList.innerHTML += `
+            <div class="flex justify-between items-center p-3 bg-slate-950 rounded border border-slate-800">
+              <div>
+                <p class="font-bold text-white text-sm">${e.title}</p>
+                <p class="text-xs text-slate-400">Deadline: ${e.deadline} | Status: <span class="${isEOpen ? 'text-emerald-400' : 'text-rose-400'} font-bold">${e.status}</span></p>
+              </div>
+              <button onclick="toggleSingleElection('${e.id}', '${isEOpen ? 'CLOSED' : 'OPEN'}')" class="px-3 py-1.5 ${isEOpen ? 'bg-rose-600' : 'bg-emerald-600'} text-white rounded text-xs font-semibold cursor-pointer">
+                ${isEOpen ? 'Close Election' : 'Re-Open Election'}
+              </button>
+            </div>`;
+        }
+
+        if (stList) {
+          stList.innerHTML += `
+            <div onclick="selectStudentElection('${e.id}')" class="p-3 bg-slate-950 rounded border border-slate-800 cursor-pointer hover:border-indigo-500 transition">
+              <p class="font-bold text-white text-sm">${e.title} <span class="text-xs ${isEOpen ? 'text-emerald-400' : 'text-rose-400'} font-bold">(${e.status})</span></p>
+            </div>`;
+        }
+      });
+
+      const resC = await fetch('/api/candidates');
+      const candidates = await resC.json();
+      const pendingList = document.getElementById('pendingNominationsList');
+      const candLeaderboard = document.getElementById('candidateLeaderboard');
+      
+      if (pendingList) pendingList.innerHTML = '';
+      if (candLeaderboard) candLeaderboard.innerHTML = '';
+
+      candidates.forEach(c => {
+        if (pendingList) {
+          const isPending = c.status === 'PENDING';
+          pendingList.innerHTML += `
+            <div class="flex justify-between items-center p-3 bg-slate-950 rounded border border-slate-800">
+              <div>
+                <p class="font-bold text-white text-sm">${c.name} (${c.roll})</p>
+                <p class="text-xs text-slate-400">Manifesto: "${c.manifesto}"</p>
+                <p class="text-xs text-slate-400">Status: <span class="font-bold ${c.status === 'ACCEPTED' ? 'text-emerald-400' : (c.status === 'REJECTED' ? 'text-rose-400' : 'text-amber-400')}">${c.status}</span></p>
+              </div>
+              ${isPending ? `
+                <div class="flex gap-2">
+                  <button onclick="reviewNomination('${c.id}', 'ACCEPTED')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-semibold cursor-pointer">Accept</button>
+                  <button onclick="reviewNomination('${c.id}', 'REJECTED')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-semibold cursor-pointer">Reject</button>
+                </div>` : `<span class="text-xs text-slate-500 font-bold uppercase">${c.status}</span>`}
+            </div>`;
+        }
+
+        if (candLeaderboard && c.status === 'ACCEPTED') {
+          candLeaderboard.innerHTML += `
+            <div class="flex justify-between items-center bg-slate-900 p-3.5 rounded-xl border border-slate-800">
+              <div>
+                <p class="font-bold text-slate-200 text-sm">${c.name}</p>
+                <p class="text-xs text-slate-400">"${c.manifesto}"</p>
+              </div>
+              <span class="font-black text-indigo-400 text-sm">${c.votes} Votes</span>
+            </div>`;
+        }
+      });
     }
 
     async function toggleSingleElection(election_id, status) {
@@ -266,80 +360,109 @@
       syncGlobalState();
     }
 
-    async function loadStats() {
-      try {
-        const res = await fetch('/api/stats');
-        const data = await res.json();
-        document.getElementById('metricPersisted').innerText = data.persisted_votes;
-        document.getElementById('metricRateLimited').innerText = data.rate_limited_requests;
-        document.getElementById('metricQueue').innerText = data.queue_depth;
-        document.getElementById('metricPending').innerText = data.pending_votes;
-        document.getElementById('metricFailed').innerText = data.failed_votes;
-      } catch(e) {}
+    async function reviewNomination(candidate_id, status) {
+      await fetch('/api/candidates/review', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ candidate_id, status })
+      });
+      syncGlobalState();
     }
 
-    async function loadLeaderboard() {
-      try {
-        const res = await fetch('/api/candidates');
-        const data = await res.json();
-        const candList = document.getElementById('candidateLeaderboard');
-        const sel = document.getElementById('candSelect');
-        if (candList) candList.innerHTML = '';
-        if (sel) sel.innerHTML = '';
+    async function createElection() {
+      const title = document.getElementById('elTitle').value;
+      const description = document.getElementById('elDesc').value;
+      const deadline = document.getElementById('elDeadline').value;
 
-        data.forEach(c => {
-          if (candList) {
-            candList.innerHTML += `
-              <div class="flex justify-between items-center bg-slate-900 p-3.5 rounded-xl border border-slate-800">
-                <span class="font-semibold text-slate-200">${c.name}</span>
-                <span class="font-black text-indigo-400">${c.votes} Votes</span>
-              </div>`;
-          }
-          if (sel) sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-        });
-      } catch(e) {}
+      await fetch('/api/elections', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ title, description, deadline })
+      });
+      syncGlobalState();
     }
 
-    async function castVote() {
-      const voter_id = document.getElementById('voterId').value;
-      const candidate_id = document.getElementById('candSelect').value;
-      const resEl = document.getElementById('voteRes');
+    async function createUser() {
+      const roll = document.getElementById('uRoll').value;
+      const name = document.getElementById('uName').value;
+      const role = document.getElementById('uRole').value;
+
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ roll, name, role })
+      });
+      alert('User created successfully');
+    }
+
+    async function selectStudentElection(election_id) {
+      activeElectionId = election_id;
+      const resE = await fetch('/api/elections');
+      const elections = await resE.json();
+      const el = elections.find(e => e.id === election_id);
+
+      const det = document.getElementById('selectedElectionDetails');
+      det.classList.remove('hidden');
+      det.innerHTML = `<p class="font-bold text-white">${el.title}</p><p>Description: ${el.description || 'N/A'}</p><p>Deadline: ${el.deadline}</p><p>Status: <span class="font-bold ${el.status === 'OPEN' ? 'text-emerald-400' : 'text-rose-400'}">${el.status}</span></p>`;
+
+      const resC = await fetch('/api/candidates?election_id=' + election_id);
+      const candidates = await resC.json();
+      const accepted = candidates.filter(c => c.status === 'ACCEPTED');
+      const list = document.getElementById('nomineesList');
+      list.innerHTML = '';
+
+      if (accepted.length === 0 || el.status !== 'OPEN') {
+        list.innerHTML = `<p class="text-xs text-rose-400 font-semibold">No approved candidate nominees for this election yet or election is CLOSED.</p>`;
+        return;
+      }
+
+      accepted.forEach(c => {
+        list.innerHTML += `
+          <div class="p-3 bg-slate-950 rounded border border-slate-800 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-white text-sm">${c.name}</p>
+              <p class="text-xs text-slate-400">"${c.manifesto}"</p>
+            </div>
+            <button onclick="submitStudentVote('${c.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold cursor-pointer">
+              Vote Candidate
+            </button>
+          </div>`;
+      });
+    }
+
+    async function submitStudentVote(candidate_id) {
+      const msg = document.getElementById('voteStatusMsg');
+      const voter_id = activeUser ? activeUser.id : 'STUDENT001';
 
       try {
         const res = await fetch('/api/vote', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ voter_id, candidate_id })
+          body: JSON.stringify({ voter_id, candidate_id, election_id: activeElectionId })
         });
         const data = await res.json();
         if (res.ok) {
-          resEl.className = 'text-xs font-semibold text-emerald-400';
-          resEl.innerText = 'Vote Cast Successfully!';
+          msg.className = 'text-xs font-semibold text-emerald-400';
+          msg.innerText = 'Vote Cast Successfully!';
         } else {
-          resEl.className = 'text-xs font-semibold text-rose-400';
-          resEl.innerText = data.error;
+          msg.className = 'text-xs font-semibold text-rose-400';
+          msg.innerText = data.error;
         }
-        loadStats();
-        loadLeaderboard();
-      } catch (err) {
-        resEl.className = 'text-xs font-semibold text-rose-400';
-        resEl.innerText = 'Error submitting vote.';
+        syncGlobalState();
+      } catch(e) {
+        msg.className = 'text-xs font-semibold text-rose-400';
+        msg.innerText = 'Failed to submit vote.';
       }
     }
 
-    // Real-Time SSE Event listener to ensure immediate sync on all open portals
     const evtSource = new EventSource('/api/events');
     evtSource.onmessage = (e) => {
       const data = JSON.parse(e.data);
-      if (data.event === 'poll_state_changed') {
-        syncGlobalState();
-      }
+      if (data.event === 'poll_state_changed') syncGlobalState();
     };
 
-    setInterval(() => { syncGlobalState(); loadStats(); loadLeaderboard(); }, 2000);
+    setInterval(() => { syncGlobalState(); }, 3000);
     syncGlobalState();
-    loadStats();
-    loadLeaderboard();
   </script>
 </body>
 </html>
