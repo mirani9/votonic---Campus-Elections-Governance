@@ -70,50 +70,47 @@
         <select id="sidebarElectionSelect" onchange="selectElectionForShowcase(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"></select>
       </div>
 
-      <!-- 3 LOGIN PORTAL CARDS -->
+      <!-- 3 IDENTICAL UNIFORM LOGIN PORTAL CARDS (No OPEN/CLOSED badges) -->
       <div id="portalCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         <!-- 1. Student Portal -->
         <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-500 transition shadow-lg">
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-3xl">🎓</span>
-              <span id="badgeStudent" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+          <div class="space-y-2.5">
+            <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl">
+              🎓
             </div>
             <h3 class="text-lg font-bold text-white pt-1">1. Student Portal</h3>
-            <p class="text-xs text-slate-400">Login with Roll ID to vote or request candidacy.</p>
+            <p class="text-xs text-slate-400 leading-relaxed">Login with Roll ID to vote or request candidacy.</p>
           </div>
-          <button onclick="openLoginModal('STUDENT')" class="mt-5 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs transition cursor-pointer">
+          <button onclick="openLoginModal('STUDENT')" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs transition cursor-pointer shadow-md shadow-indigo-950/50">
             Student Login
           </button>
         </div>
 
         <!-- 2. Candidate Portal -->
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-purple-500 transition shadow-lg">
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-3xl">📝</span>
-              <span id="badgeCandidate" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-500 transition shadow-lg">
+          <div class="space-y-2.5">
+            <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl">
+              📝
             </div>
             <h3 class="text-lg font-bold text-white pt-1">2. Candidate Portal</h3>
-            <p class="text-xs text-slate-400">Login with approved Candidate ID to build your profile.</p>
+            <p class="text-xs text-slate-400 leading-relaxed">Login with approved Candidate ID to build your profile.</p>
           </div>
-          <button onclick="openLoginModal('CANDIDATE')" class="mt-5 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-xs transition cursor-pointer">
+          <button onclick="openLoginModal('CANDIDATE')" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs transition cursor-pointer shadow-md shadow-indigo-950/50">
             Candidate Login
           </button>
         </div>
 
         <!-- 3. Administrative Portal -->
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-amber-500 transition shadow-lg">
-          <div class="space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="text-3xl">⚙️</span>
-              <span id="badgeAdmin" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-500 transition shadow-lg">
+          <div class="space-y-2.5">
+            <div class="w-12 h-12 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-2xl">
+              ⚙️
             </div>
             <h3 class="text-lg font-bold text-white pt-1">3. Administrative Portal</h3>
-            <p class="text-xs text-slate-400">Approve candidacy requests & control elections.</p>
+            <p class="text-xs text-slate-400 leading-relaxed">Approve candidacy requests & control elections.</p>
           </div>
-          <button onclick="openLoginModal('ADMIN')" class="mt-5 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-xs transition cursor-pointer">
+          <button onclick="openLoginModal('ADMIN')" class="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs transition cursor-pointer shadow-md shadow-indigo-950/50">
             Administrative Login
           </button>
         </div>
@@ -335,7 +332,7 @@
     </div>
   </footer>
 
-  <!-- LOGIN MODAL (Inputs always open empty—never pre-filled) -->
+  <!-- LOGIN MODAL -->
   <div id="loginModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -365,13 +362,11 @@
     let modalRole = 'STUDENT';
     let selectedShowcaseElectionId = null;
 
-    // Shift Login Cards to Left Sidebar (Only when not logged in)
     function shiftPortalsToSidebar() {
       const sidebar = document.getElementById('portalSidebar');
       const mainStage = document.getElementById('dynamicMainStage');
 
       if (currentSession) {
-        // Hide ALL login portals completely when logged in
         sidebar.classList.add('hidden');
         mainStage.classList.remove('hidden');
         return;
@@ -480,7 +475,6 @@
       });
     }
 
-    // Login Modal Handlers (Inputs strictly cleared on open)
     function openLoginModal(role) {
       modalRole = role;
       document.getElementById('modalErrorMsg').classList.add('hidden');
@@ -554,7 +548,6 @@
       resetHome();
     }
 
-    // Student Actions
     async function refreshStudentDashboard() {
       if (!currentSession || currentSession.role !== 'STUDENT') return;
       document.getElementById('studentWelcome').innerText = `🎓 Welcome, ${currentSession.user.name}`;
@@ -663,7 +656,6 @@
       }
     }
 
-    // Admin Actions
     function renderAdminDashboard() {
       document.getElementById('dbModeBadge').innerText = appState.dbMode || "Cloud Synced";
 
@@ -700,7 +692,6 @@
           </div>`;
       }).join('');
 
-      // Render Vote Audit Trail Table
       const votes = appState.votes || [];
       document.getElementById('totalVotesCountBadge').innerText = `${votes.length} Recorded Votes`;
       const auditBody = document.getElementById('adminVoteAuditTable');
@@ -770,16 +761,6 @@
         appState = await res.json();
 
         const isGlobalOpen = appState.globalStatus === 'OPEN';
-        ['Student', 'Candidate', 'Admin'].forEach(p => {
-          const badge = document.getElementById('badge' + p);
-          if (badge) {
-            badge.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
-            badge.className = isGlobalOpen
-              ? "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800"
-              : "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-950 text-rose-400 border border-rose-800";
-          }
-        });
-
         const sGlobal = document.getElementById('studentGlobalStatus');
         if (sGlobal) {
           sGlobal.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
