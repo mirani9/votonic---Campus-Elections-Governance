@@ -1,13 +1,14 @@
 {
-  "name": "flash-poll-system",
-  "version": "1.0.0",
-  "description": "Distributed Flash Poll System - Pure JS Engine",
+  "name": "votonic-flash-poll",
+  "version": "2.0.0",
+  "description": "VOTONIC Campus Governance & Cloud Election Engine",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "mongoose": "^8.2.0"
   }
 }

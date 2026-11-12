@@ -5,556 +5,753 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VOTONIC — Campus Elections & Governance</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .perspective-container { perspective: 1200px; }
+    .card-3d {
+      transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.45s ease, border-color 0.3s ease;
+      transform-style: preserve-3d;
+    }
+    .card-3d:hover {
+      transform: translateY(-10px) rotateX(4deg) rotateY(-4deg) scale(1.02);
+      box-shadow: 0 25px 50px -12px rgba(99, 102, 241, 0.35);
+      border-color: #6366f1;
+    }
+    .sidebar-transition {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
 
-  <!-- Navigation Header -->
-  <header class="bg-slate-900 border-b border-slate-800 px-8 py-4 flex justify-between items-center">
-    <div class="flex items-center gap-3 cursor-pointer" onclick="nav('landing')">
+  <!-- Top Header -->
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-8 py-4 flex justify-between items-center sticky top-0 z-40">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="resetHome()">
       <span class="text-2xl">🎓</span>
       <div>
         <h1 class="text-xl font-bold tracking-wide text-white">VOTONIC</h1>
-        <p id="currentUserBadge" class="text-xs text-indigo-400">Campus Governance</p>
+        <p id="headerSubtitle" class="text-xs text-indigo-400">Campus Elections & Governance</p>
       </div>
     </div>
-    <div class="flex items-center gap-6 text-xs font-semibold">
-      <button onclick="nav('winners')" id="nav-winners" class="text-slate-300 hover:text-indigo-400 transition cursor-pointer">🏆 Previous Winners</button>
-      <button onclick="nav('dashboard')" id="nav-dashboard" class="text-slate-300 hover:text-indigo-400 transition cursor-pointer">📊 Main Dashboard</button>
-      <button onclick="logout()" id="btnLogout" class="hidden text-rose-400 hover:text-rose-300 transition cursor-pointer">Logout</button>
+
+    <div class="flex items-center gap-5 text-xs font-semibold">
+      <button onclick="showSection('winners')" class="text-slate-300 hover:text-indigo-400 transition cursor-pointer">🏆 Previous Winners</button>
+      <button onclick="resetHome()" class="text-slate-300 hover:text-indigo-400 transition cursor-pointer">🏛 Main Dashboard</button>
+      <button onclick="logout()" id="btnLogout" class="hidden px-3 py-1.5 bg-rose-950 text-rose-400 border border-rose-800 rounded-lg hover:bg-rose-900 cursor-pointer">Logout</button>
     </div>
   </header>
 
-  <!-- 1. MAIN PORTALS LANDING -->
-  <main id="view-landing" class="max-w-5xl mx-auto py-12 px-6 space-y-8">
-    <div class="text-center space-y-2">
-      <h2 class="text-3xl font-black text-white">Campus Elections & Governance</h2>
-      <p class="text-slate-400 text-sm">Select your respective portal below to log in.</p>
-    </div>
+  <!-- MAIN WORKSPACE WRAPPER -->
+  <div id="mainWorkspace" class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
-      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
-        <div class="space-y-3">
-          <div class="text-4xl">🎓</div>
-          <h3 class="text-xl font-bold text-white">1. Student Portal</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Login with Student Roll ID & Password to cast your vote.</p>
-          <p class="text-xs font-bold pt-1">Status: <span id="portalStatusStudent" class="text-emerald-400">OPEN</span></p>
+    <!-- PORTAL LOGIN CARDS (Shifts to Left Sidebar when Ongoing Election Dropdown is clicked) -->
+    <aside id="portalSidebar" class="w-full sidebar-transition space-y-6">
+      <div id="heroHeading" class="text-center space-y-3 py-4">
+        <h2 class="text-3xl md:text-4xl font-black text-white">Campus Elections & Governance</h2>
+        <p class="text-slate-400 text-sm">Explore ongoing election candidates below or log into your respective portal.</p>
+
+        <!-- ONGOING ELECTIONS DROPDOWN TRIGGER -->
+        <div class="relative inline-block pt-3">
+          <button onclick="toggleElectionDropdown()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-3 mx-auto cursor-pointer transition">
+            <span>🗳️ Ongoing Elections & Candidate Profiles</span>
+            <span id="dropdownArrow">▼</span>
+          </button>
+          <div id="ongoingDropdownMenu" class="hidden mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden text-left z-50 mx-auto">
+            <div class="px-4 py-2 bg-slate-950 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+              Select an Election to View 3D Candidate Cards
+            </div>
+            <div id="ongoingDropdownList" class="divide-y divide-slate-800"></div>
+          </div>
         </div>
-        <button onclick="nav('student-login')" class="mt-6 w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-sm transition cursor-pointer">
-          Student Login
-        </button>
       </div>
 
-      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
-        <div class="space-y-3">
-          <div class="text-4xl">📝</div>
-          <h3 class="text-xl font-bold text-white">2. Candidate Portal</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Submit nomination & view approved manifestos.</p>
-          <p class="text-xs font-bold pt-1">Status: <span id="portalStatusCandidate" class="text-emerald-400">OPEN</span></p>
-        </div>
-        <button onclick="nav('candidate-portal')" class="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer">
-          Candidate Portal
-        </button>
+      <!-- Compact Dropdown button when shifted to sidebar -->
+      <div id="sidebarElectionSwitcher" class="hidden bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2">
+        <label class="text-[11px] font-bold uppercase text-indigo-400">Switch Election View</label>
+        <select id="sidebarElectionSelect" onchange="selectElectionForShowcase(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white"></select>
       </div>
 
-      <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-600 transition shadow-lg">
-        <div class="space-y-3">
-          <div class="text-4xl">⚙️</div>
-          <h3 class="text-xl font-bold text-white">3. Administrative Portal</h3>
-          <p class="text-xs text-slate-400 leading-relaxed">Approve nominations & close elections.</p>
-          <p class="text-xs font-bold pt-1">Status: <span id="portalStatusAdmin" class="text-emerald-400">OPEN</span></p>
+      <!-- 3 LOGIN PORTAL CARDS -->
+      <div id="portalCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- 1. Student Portal -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-indigo-500 transition shadow-lg">
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-3xl">🎓</span>
+              <span id="badgeStudent" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+            </div>
+            <h3 class="text-lg font-bold text-white pt-1">1. Student Portal</h3>
+            <p class="text-xs text-slate-400">Login with Roll ID to vote or request candidacy.</p>
+          </div>
+          <button onclick="openLoginModal('STUDENT')" class="mt-5 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold text-xs transition cursor-pointer">
+            Student Login
+          </button>
         </div>
-        <button onclick="nav('admin-login')" class="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition cursor-pointer">
-          Administrative Login
-        </button>
-      </div>
-    </div>
-  </main>
 
-  <!-- 2. STUDENT LOGIN PAGE -->
-  <section id="view-student-login" class="hidden max-w-md mx-auto py-16 px-6">
-    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="border-b border-slate-800 pb-4 flex justify-between items-center">
-        <div>
-          <h2 class="text-xl font-bold text-white">🎓 Student Login</h2>
-          <p class="text-xs text-slate-400 mt-1">Enter your Roll ID and Password</p>
+        <!-- 2. Candidate Portal -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-purple-500 transition shadow-lg">
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-3xl">📝</span>
+              <span id="badgeCandidate" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+            </div>
+            <h3 class="text-lg font-bold text-white pt-1">2. Candidate Portal</h3>
+            <p class="text-xs text-slate-400">Login with approved Candidate ID to build your profile.</p>
+          </div>
+          <button onclick="openLoginModal('CANDIDATE')" class="mt-5 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-xs transition cursor-pointer">
+            Candidate Login
+          </button>
         </div>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
+
+        <!-- 3. Administrative Portal -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between hover:border-amber-500 transition shadow-lg">
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="text-3xl">⚙️</span>
+              <span id="badgeAdmin" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+            </div>
+            <h3 class="text-lg font-bold text-white pt-1">3. Administrative Portal</h3>
+            <p class="text-xs text-slate-400">Approve candidacy requests & control elections.</p>
+          </div>
+          <button onclick="openLoginModal('ADMIN')" class="mt-5 w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-xs transition cursor-pointer">
+            Administrative Login
+          </button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT / MAIN CONTENT PANEL (3D Candidate Cards Showcase OR Active Logged-in Portal) -->
+    <main id="dynamicMainStage" class="hidden flex-1 space-y-6">
+      
+      <!-- A. 3D CANDIDATE PROFILE CARDS SHOWCASE -->
+      <section id="view-candidate-cards" class="hidden space-y-6">
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <div class="flex items-center gap-3">
+              <h2 id="showcaseElectionTitle" class="text-2xl font-black text-white">Election Title</h2>
+              <span id="showcaseElectionStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+            </div>
+            <p id="showcaseElectionDesc" class="text-xs text-slate-400 mt-1">Read candidate manifestos below. Login as Student to cast your vote.</p>
+          </div>
+          <button onclick="resetHome()" class="text-xs text-slate-400 hover:text-white underline cursor-pointer">✕ Close View</button>
+        </div>
+
+        <div id="cards3DContainer" class="perspective-container grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+      </section>
+
+      <!-- B. STUDENT DASHBOARD (Vote + Request Candidacy + View Approved Credentials) -->
+      <section id="view-student-dashboard" class="hidden space-y-6">
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex justify-between items-center">
+          <div>
+            <h2 id="studentWelcome" class="text-xl font-bold text-white">🎓 Welcome, Student</h2>
+            <p class="text-xs text-slate-400">Cast your vote or apply to contest in an open campus election.</p>
+          </div>
+          <span id="studentGlobalStatus" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">OPEN</span>
+        </div>
+
+        <!-- Approved Candidate Credentials Notification Banner -->
+        <div id="approvedCredentialsBox" class="hidden bg-gradient-to-r from-emerald-950 to-slate-900 border border-emerald-600 p-5 rounded-2xl space-y-2 shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wider text-emerald-400">🎉 Candidacy Request Approved!</p>
+          <p class="text-sm text-white">Your nomination for <strong id="credElectionTitle"></strong> has been accepted by Admin. Use these credentials in the <strong>Candidate Portal</strong> to build your public profile:</p>
+          <div class="flex flex-wrap gap-4 pt-2 text-xs font-mono">
+            <span class="bg-slate-950 px-3 py-1.5 rounded border border-emerald-700 text-emerald-300">Candidate ID: <strong id="credCandId"></strong></span>
+            <span class="bg-slate-950 px-3 py-1.5 rounded border border-emerald-700 text-emerald-300">Password: <strong id="credCandPass"></strong></span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Vote Box -->
+          <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="font-bold text-white text-md">🗳️ Cast Your Vote</h3>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Select Election</label>
+              <select id="voteElectionSelect" onchange="loadVoteCandidates(this.value)" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white"></select>
+            </div>
+            <div id="voteCandidatesList" class="space-y-3"></div>
+            <p id="studentVoteFeedback" class="text-xs font-semibold"></p>
+          </div>
+
+          <!-- Request Candidacy Box -->
+          <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+            <h3 class="font-bold text-white text-md">📝 Request to Become a Candidate</h3>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Target Election</label>
+              <select id="reqElectionSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white"></select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Why should Admin approve your nomination?</label>
+              <textarea id="reqReason" rows="3" placeholder="Enter your qualifications & initial manifesto..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white"></textarea>
+            </div>
+            <button onclick="submitCandidacyRequest()" class="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold text-xs cursor-pointer">
+              Submit Candidacy Request to Admin
+            </button>
+            <div id="myRequestsStatus" class="space-y-2 pt-2 border-t border-slate-800"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- C. CANDIDATE PROFILE BUILDER DASHBOARD -->
+      <section id="view-candidate-dashboard" class="hidden space-y-6">
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
+          <h2 id="candWelcomeTitle" class="text-xl font-bold text-white">📝 Candidate Profile Studio</h2>
+          <p class="text-xs text-slate-400 mt-1">Customize your public 3D profile card displayed to all students on the main dashboard.</p>
+        </div>
+
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4 max-w-2xl">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Profile Avatar Icon</label>
+              <select id="candAvatarInput" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
+                <option value="🧑‍💼">🧑‍💼 Leader</option>
+                <option value="👩‍🎓">👩‍🎓 Scholar Female</option>
+                <option value="👨‍🎓">👨‍🎓 Scholar Male</option>
+                <option value="🚀">🚀 Innovator</option>
+                <option value="🏆">🏆 Champion</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Department & Year</label>
+              <input type="text" id="candDeptInput" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Campaign Slogan</label>
+            <input type="text" id="candSloganInput" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Detailed Manifesto (Visible to all voters)</label>
+            <textarea id="candManifestoInput" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white"></textarea>
+          </div>
+          <button onclick="saveCandidateProfile()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl cursor-pointer">
+            Publish Profile to Homepage Dashboard
+          </button>
+          <p id="candSaveMsg" class="text-xs font-semibold text-emerald-400"></p>
+        </div>
+      </section>
+
+      <!-- D. ADMIN CONTROL CENTER -->
+      <section id="view-admin-dashboard" class="hidden space-y-6">
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-wrap justify-between items-center gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-white">⚙️ Administrative Control Center</h2>
+            <p class="text-xs text-slate-400">Database: <span id="dbModeBadge" class="text-indigo-400 font-semibold">Cloud Synced</span></p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="toggleElectionState('ALL', 'OPEN')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg cursor-pointer">Open All Elections</button>
+            <button onclick="toggleElectionState('ALL', 'CLOSED')" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-lg cursor-pointer">Close All Elections</button>
+          </div>
+        </div>
+
+        <!-- Pending Student Candidacy Requests -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="font-bold text-white text-md">📩 Student Candidacy Requests (Approve to Issue Candidate ID)</h3>
+          <div id="adminRequestsList" class="space-y-3"></div>
+        </div>
+
+        <!-- Manage Elections -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+          <h3 class="font-bold text-white text-md">🗳️ Manage Campus Elections</h3>
+          <div id="adminElectionsList" class="space-y-3"></div>
+        </div>
+
+        <!-- Create New Election & Student -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
+            <h3 class="font-bold text-white text-sm">Create New Election</h3>
+            <input type="text" id="newElTitle" placeholder="Election Title" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <input type="text" id="newElDesc" placeholder="Description" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <input type="date" id="newElDeadline" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <button onclick="adminCreateElection()" class="w-full py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold cursor-pointer">Publish Election</button>
+          </div>
+
+          <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
+            <h3 class="font-bold text-white text-sm">Register New Student</h3>
+            <input type="text" id="newStRoll" placeholder="Roll ID (e.g. STUDENT003)" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <input type="text" id="newStName" placeholder="Student Full Name" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <input type="text" id="newStPass" placeholder="Password" value="123" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <button onclick="adminCreateStudent()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold cursor-pointer">Create Student Account</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- E. PREVIOUS WINNERS VIEW -->
+      <section id="view-winners" class="hidden bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+          <h2 class="text-xl font-bold text-white">🏆 Previous Campus Election Winners</h2>
+          <button onclick="resetHome()" class="text-xs text-slate-400 hover:text-white cursor-pointer">← Back</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+            <p class="text-xs text-indigo-400 font-bold">2025 Student Council President</p>
+            <p class="text-lg font-bold text-white mt-1">Alice Johnson</p>
+            <p class="text-xs text-slate-400 mt-1">Votes: 1,420</p>
+          </div>
+          <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
+            <p class="text-xs text-indigo-400 font-bold">2024 Cultural Secretary</p>
+            <p class="text-lg font-bold text-white mt-1">Rohan Kulkarni</p>
+            <p class="text-xs text-slate-400 mt-1">Votes: 1,195</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div id="loginModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 id="modalLoginTitle" class="text-lg font-bold text-white">Portal Login</h3>
+        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white text-sm cursor-pointer">✕</button>
       </div>
       <div class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">User ID / Roll Number</label>
-          <input type="text" id="loginStudentRoll" value="STUDENT001" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
+          <label id="modalIdLabel" class="block text-xs text-slate-400 mb-1">User ID</label>
+          <input type="text" id="modalUserId" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
-          <input type="password" id="loginStudentPass" value="123" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
+          <label class="block text-xs text-slate-400 mb-1">Password</label>
+          <input type="password" id="modalPassword" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
         </div>
-        <button onclick="doLogin('STUDENT')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
-          Login to Student Portal
+        <p id="modalErrorMsg" class="text-xs text-rose-400 font-semibold hidden"></p>
+        <button onclick="submitLogin()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
+          Authenticate & Enter Portal
         </button>
       </div>
     </div>
-  </section>
-
-  <!-- 3. ADMIN LOGIN PAGE -->
-  <section id="view-admin-login" class="hidden max-w-md mx-auto py-16 px-6">
-    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="border-b border-slate-800 pb-4 flex justify-between items-center">
-        <div>
-          <h2 class="text-xl font-bold text-white">⚙️ Administrative Login</h2>
-          <p class="text-xs text-slate-400 mt-1">Enter Admin Credentials</p>
-        </div>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Admin User ID</label>
-          <input type="text" id="loginAdminRoll" value="ADMIN001" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 mb-1">Password</label>
-          <input type="password" id="loginAdminPass" value="admin" class="w-full bg-slate-950 border border-slate-800 rounded p-2.5 text-sm text-white">
-        </div>
-        <button onclick="doLogin('ADMIN')" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
-          Login to Admin Center
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. STUDENT VOTING PORTAL -->
-  <section id="view-student-kiosk" class="hidden max-w-4xl mx-auto py-10 px-6 space-y-6">
-    <div class="border-b border-slate-800 pb-4 flex justify-between items-center">
-      <div>
-        <h2 class="text-2xl font-bold text-white">🎓 Student Voting Portal</h2>
-        <p class="text-xs text-slate-400">Cast one vote per specific election.</p>
-      </div>
-      <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
-        <h3 class="font-bold text-white text-md">1. Select Election</h3>
-        <div id="studentElectionsList" class="space-y-2"></div>
-      </div>
-
-      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
-        <h3 class="font-bold text-white text-md">2. Approved Nominees</h3>
-        <div id="selectedElectionDetails" class="text-xs text-slate-400 p-3 bg-slate-950 rounded border border-slate-800 hidden"></div>
-        <div id="nomineesList" class="space-y-3"></div>
-        <p id="voteStatusMsg" class="text-xs font-semibold mt-2"></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- 5. ADMIN CONTROL CENTER -->
-  <section id="view-admin-center" class="hidden max-w-5xl mx-auto py-10 px-6 space-y-8">
-    <div class="border-b border-slate-800 pb-4 flex justify-between items-center">
-      <div>
-        <h2 class="text-2xl font-bold text-white">⚙️ Administrative Control Center</h2>
-        <p class="text-xs text-slate-400">Manage elections, review candidate nominations, and add users.</p>
-      </div>
-      <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 flex justify-between items-center">
-      <div>
-        <p class="text-sm font-bold text-white">Master Campus Election Lock</p>
-        <p class="text-xs text-slate-400">Global State across all portals: <span id="adminMasterStatus" class="font-bold text-emerald-400">OPEN</span></p>
-      </div>
-      <div class="flex gap-3">
-        <button onclick="toggleMasterPoll(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg cursor-pointer">Open All Elections</button>
-        <button onclick="toggleMasterPoll(false)" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-lg cursor-pointer">Close All Elections</button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
-        <h3 class="font-bold text-white text-md">Open New Campus Election</h3>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Election Name / Title</label>
-          <input type="text" id="elTitle" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Description</label>
-          <input type="text" id="elDesc" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Closing Deadline Date</label>
-          <input type="date" id="elDeadline" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-        </div>
-        <button onclick="createElection()" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded font-semibold text-xs cursor-pointer">Create & Publish Election</button>
-      </div>
-
-      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
-        <h3 class="font-bold text-white text-md">Add New Batch User</h3>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">User ID (Roll Number)</label>
-          <input type="text" id="uRoll" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Full Name</label>
-          <input type="text" id="uName" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Role</label>
-          <select id="uRole" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-            <option value="STUDENT">STUDENT</option>
-            <option value="CANDIDATE">CANDIDATE</option>
-          </select>
-        </div>
-        <button onclick="createUser()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded font-semibold text-xs cursor-pointer">Create User Account</button>
-      </div>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
-      <h3 class="font-bold text-white text-md">All Campus Elections</h3>
-      <div id="adminElectionsList" class="space-y-3"></div>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 space-y-4">
-      <h3 class="font-bold text-white text-md">Review Pending Candidate Nominations</h3>
-      <div id="pendingNominationsList" class="space-y-3"></div>
-    </div>
-  </section>
-
-  <!-- 6. CANDIDATE PORTAL VIEW -->
-  <section id="view-candidate-portal" class="hidden max-w-4xl mx-auto py-10 px-6 space-y-6">
-    <div class="border-b border-slate-800 pb-4 flex justify-between items-center">
-      <h2 class="text-2xl font-bold text-white">📝 Candidate Leaderboard & Manifestos</h2>
-      <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-    </div>
-    <div id="candidateLeaderboard" class="space-y-3"></div>
-  </section>
-
-  <!-- 7. PREVIOUS WINNERS VIEW -->
-  <section id="view-winners" class="hidden max-w-3xl mx-auto py-12 px-6">
-    <div class="bg-slate-900 p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">🏆 Previous Campus Election Winners</h2>
-        <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
-          <p class="text-xs text-indigo-400 font-bold">2025 Student Council President</p>
-          <p class="text-lg font-bold text-white mt-1">Alice Johnson</p>
-          <p class="text-xs text-slate-400 mt-1">Total Votes: 1,420</p>
-        </div>
-        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800">
-          <p class="text-xs text-indigo-400 font-bold">2024 Student Council President</p>
-          <p class="text-lg font-bold text-white mt-1">Bob Smith</p>
-          <p class="text-xs text-slate-400 mt-1">Total Votes: 1,180</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 8. MAIN DASHBOARD / LIVE TELEMETRY VIEW -->
-  <section id="view-dashboard" class="hidden max-w-5xl mx-auto py-12 px-6 space-y-6">
-    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-      <div>
-        <h2 class="text-2xl font-bold text-white">📊 Main Dashboard & System Telemetry</h2>
-        <p class="text-xs text-slate-400 mt-1">Real-time architecture and event stream metrics</p>
-      </div>
-      <button onclick="nav('landing')" class="text-xs text-slate-400 hover:text-white">← Back</button>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Persisted Votes</p>
-        <p id="metricPersisted" class="text-2xl font-black text-emerald-400 mt-1">0</p>
-      </div>
-      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Total Elections</p>
-        <p id="metricElections" class="text-2xl font-black text-indigo-400 mt-1">0</p>
-      </div>
-      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Pending Nominations</p>
-        <p id="metricPendingNom" class="text-2xl font-black text-amber-400 mt-1">0</p>
-      </div>
-      <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-        <p class="text-xs text-slate-400 font-semibold uppercase">Total Registered Users</p>
-        <p id="metricUsers" class="text-2xl font-black text-slate-400 mt-1">0</p>
-      </div>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-      <h3 class="font-bold text-white text-sm mb-3">Live System Event Stream</h3>
-      <div id="eventsLog" class="h-48 overflow-y-auto font-mono text-xs bg-slate-950 p-3 rounded space-y-1 text-slate-300"></div>
-    </div>
-  </section>
+  </div>
 
   <script>
-    let activeUser = null;
-    let activeElectionId = null;
+    let appState = { globalStatus: 'OPEN', elections: [], candidates: [], candidacyRequests: [] };
+    let currentSession = null; // { role, user, candidate }
+    let modalRole = 'STUDENT';
+    let selectedShowcaseElectionId = null;
 
-    function nav(target) {
-      ['landing', 'student-login', 'admin-login', 'student-kiosk', 'admin-center', 'candidate-portal', 'winners', 'dashboard'].forEach(v => {
-        const el = document.getElementById('view-' + v);
-        if (el) el.classList.add('hidden');
-      });
-      document.getElementById('view-' + target).classList.remove('hidden');
+    // Layout Controller: Shift Login Cards to Left Sidebar
+    function shiftPortalsToSidebar() {
+      const sidebar = document.getElementById('portalSidebar');
+      const grid = document.getElementById('portalCardsGrid');
+      const hero = document.getElementById('heroHeading');
+      const switcher = document.getElementById('sidebarElectionSwitcher');
+      const mainStage = document.getElementById('dynamicMainStage');
 
-      const wBtn = document.getElementById('nav-winners');
-      const dBtn = document.getElementById('nav-dashboard');
-      if (wBtn) wBtn.className = target === 'winners' ? 'text-indigo-400 font-bold transition cursor-pointer' : 'text-slate-300 hover:text-indigo-400 transition cursor-pointer';
-      if (dBtn) dBtn.className = target === 'dashboard' ? 'text-indigo-400 font-bold transition cursor-pointer' : 'text-slate-300 hover:text-indigo-400 transition cursor-pointer';
+      sidebar.className = "w-full lg:w-80 shrink-0 sidebar-transition space-y-4";
+      grid.className = "grid grid-cols-1 gap-4";
+      hero.classList.add('hidden');
+      switcher.classList.remove('hidden');
+      mainStage.classList.remove('hidden');
     }
 
-    function doLogin(role) {
-      if (role === 'STUDENT') {
-        const roll = document.getElementById('loginStudentRoll').value;
-        activeUser = { id: roll, role: 'STUDENT' };
-        document.getElementById('currentUserBadge').innerText = roll + ' (STUDENT)';
-        document.getElementById('btnLogout').classList.remove('hidden');
-        nav('student-kiosk');
-      } else {
-        const roll = document.getElementById('loginAdminRoll').value;
-        activeUser = { id: roll, role: 'ADMIN' };
-        document.getElementById('currentUserBadge').innerText = 'System Admin (ADMIN)';
-        document.getElementById('btnLogout').classList.remove('hidden');
-        nav('admin-center');
+    function resetHome() {
+      if (currentSession) {
+        if (currentSession.role === 'STUDENT') showSection('student-dashboard');
+        if (currentSession.role === 'CANDIDATE') showSection('candidate-dashboard');
+        if (currentSession.role === 'ADMIN') showSection('admin-dashboard');
+        return;
       }
-      syncGlobalState();
+      const sidebar = document.getElementById('portalSidebar');
+      const grid = document.getElementById('portalCardsGrid');
+      const hero = document.getElementById('heroHeading');
+      const switcher = document.getElementById('sidebarElectionSwitcher');
+      const mainStage = document.getElementById('dynamicMainStage');
+
+      sidebar.className = "w-full sidebar-transition space-y-6";
+      grid.className = "grid grid-cols-1 md:grid-cols-3 gap-6";
+      hero.classList.remove('hidden');
+      switcher.classList.add('hidden');
+      mainStage.classList.add('hidden');
+      document.getElementById('ongoingDropdownMenu').classList.add('hidden');
     }
 
-    function logout() {
-      activeUser = null;
-      document.getElementById('currentUserBadge').innerText = 'Campus Governance';
-      document.getElementById('btnLogout').classList.add('hidden');
-      nav('landing');
-    }
-
-    async function syncGlobalState() {
-      try {
-        const res = await fetch('/api/poll/status');
-        const data = await res.json();
-        const isOpen = data.status === 'OPEN';
-
-        ['Student', 'Candidate', 'Admin'].forEach(p => {
-          const el = document.getElementById('portalStatus' + p);
-          if (el) {
-            el.innerText = isOpen ? 'OPEN' : 'CLOSED';
-            el.className = isOpen ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
-          }
-        });
-
-        const mBadge = document.getElementById('adminMasterStatus');
-        if (mBadge) {
-          mBadge.innerText = isOpen ? 'OPEN' : 'CLOSED';
-          mBadge.className = isOpen ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
-        }
-
-        loadAdminData();
-        loadDashboardStats();
-      } catch(e) {}
-    }
-
-    async function loadDashboardStats() {
-      try {
-        const res = await fetch('/api/stats');
-        const data = await res.json();
-        document.getElementById('metricPersisted').innerText = data.persisted_votes;
-        document.getElementById('metricElections').innerText = data.total_elections;
-        document.getElementById('metricPendingNom').innerText = data.pending_nominations;
-        document.getElementById('metricUsers').innerText = data.total_users;
-      } catch(e) {}
-    }
-
-    async function toggleMasterPoll(open) {
-      await fetch(open ? '/api/poll/open' : '/api/poll/close', { method: 'POST' });
-      syncGlobalState();
-    }
-
-    async function loadAdminData() {
-      const resE = await fetch('/api/elections');
-      const elections = await resE.json();
-      
-      const elList = document.getElementById('adminElectionsList');
-      const stList = document.getElementById('studentElectionsList');
-      if (elList) elList.innerHTML = '';
-      if (stList) stList.innerHTML = '';
-
-      elections.forEach(e => {
-        const isEOpen = e.status === 'OPEN';
-        if (elList) {
-          elList.innerHTML += `
-            <div class="flex justify-between items-center p-3 bg-slate-950 rounded border border-slate-800">
-              <div>
-                <p class="font-bold text-white text-sm">${e.title}</p>
-                <p class="text-xs text-slate-400">Deadline: ${e.deadline} | Status: <span class="${isEOpen ? 'text-emerald-400' : 'text-rose-400'} font-bold">${e.status}</span></p>
-              </div>
-              <button onclick="toggleSingleElection('${e.id}', '${isEOpen ? 'CLOSED' : 'OPEN'}')" class="px-3 py-1.5 ${isEOpen ? 'bg-rose-600' : 'bg-emerald-600'} text-white rounded text-xs font-semibold cursor-pointer">
-                ${isEOpen ? 'Close Election' : 'Re-Open Election'}
-              </button>
-            </div>`;
-        }
-
-        if (stList) {
-          stList.innerHTML += `
-            <div onclick="selectStudentElection('${e.id}')" class="p-3 bg-slate-950 rounded border border-slate-800 cursor-pointer hover:border-indigo-500 transition">
-              <p class="font-bold text-white text-sm">${e.title} <span class="text-xs ${isEOpen ? 'text-emerald-400' : 'text-rose-400'} font-bold">(${e.status})</span></p>
-            </div>`;
-        }
+    function showSection(sectionName) {
+      shiftPortalsToSidebar();
+      ['candidate-cards', 'student-dashboard', 'candidate-dashboard', 'admin-dashboard', 'winners'].forEach(s => {
+        document.getElementById('view-' + s).classList.add('hidden');
       });
-
-      const resC = await fetch('/api/candidates');
-      const candidates = await resC.json();
-      const pendingList = document.getElementById('pendingNominationsList');
-      const candLeaderboard = document.getElementById('candidateLeaderboard');
-      
-      if (pendingList) pendingList.innerHTML = '';
-      if (candLeaderboard) candLeaderboard.innerHTML = '';
-
-      candidates.forEach(c => {
-        if (pendingList) {
-          const isPending = c.status === 'PENDING';
-          pendingList.innerHTML += `
-            <div class="flex justify-between items-center p-3 bg-slate-950 rounded border border-slate-800">
-              <div>
-                <p class="font-bold text-white text-sm">${c.name} (${c.roll})</p>
-                <p class="text-xs text-slate-400">Manifesto: "${c.manifesto}"</p>
-                <p class="text-xs text-slate-400">Status: <span class="font-bold ${c.status === 'ACCEPTED' ? 'text-emerald-400' : (c.status === 'REJECTED' ? 'text-rose-400' : 'text-amber-400')}">${c.status}</span></p>
-              </div>
-              ${isPending ? `
-                <div class="flex gap-2">
-                  <button onclick="reviewNomination('${c.id}', 'ACCEPTED')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-semibold cursor-pointer">Accept</button>
-                  <button onclick="reviewNomination('${c.id}', 'REJECTED')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-semibold cursor-pointer">Reject</button>
-                </div>` : `<span class="text-xs text-slate-500 font-bold uppercase">${c.status}</span>`}
-            </div>`;
-        }
-
-        if (candLeaderboard && c.status === 'ACCEPTED') {
-          candLeaderboard.innerHTML += `
-            <div class="flex justify-between items-center bg-slate-900 p-3.5 rounded-xl border border-slate-800">
-              <div>
-                <p class="font-bold text-slate-200 text-sm">${c.name}</p>
-                <p class="text-xs text-slate-400">"${c.manifesto}"</p>
-              </div>
-              <span class="font-black text-indigo-400 text-sm">${c.votes} Votes</span>
-            </div>`;
-        }
-      });
+      document.getElementById('view-' + sectionName).classList.remove('hidden');
     }
 
-    async function toggleSingleElection(election_id, status) {
-      await fetch(status === 'OPEN' ? '/api/poll/open' : '/api/poll/close', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ election_id })
-      });
-      syncGlobalState();
+    function toggleElectionDropdown() {
+      const menu = document.getElementById('ongoingDropdownMenu');
+      menu.classList.toggle('hidden');
     }
 
-    async function reviewNomination(candidate_id, status) {
-      await fetch('/api/candidates/review', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ candidate_id, status })
-      });
-      syncGlobalState();
+    function selectElectionForShowcase(electionId) {
+      selectedShowcaseElectionId = electionId;
+      document.getElementById('ongoingDropdownMenu').classList.add('hidden');
+      document.getElementById('sidebarElectionSelect').value = electionId;
+      showSection('candidate-cards');
+      renderShowcaseCards();
     }
 
-    async function createElection() {
-      const title = document.getElementById('elTitle').value;
-      const description = document.getElementById('elDesc').value;
-      const deadline = document.getElementById('elDeadline').value;
+    function renderShowcaseCards() {
+      if (!selectedShowcaseElectionId) return;
+      const el = appState.elections.find(e => e.id === selectedShowcaseElectionId);
+      if (!el) return;
 
-      await fetch('/api/elections', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ title, description, deadline })
-      });
-      syncGlobalState();
-    }
+      document.getElementById('showcaseElectionTitle').innerText = el.title;
+      document.getElementById('showcaseElectionDesc').innerText = el.description + " • Deadline: " + el.deadline;
+      const badge = document.getElementById('showcaseElectionStatus');
+      badge.innerText = el.status;
+      badge.className = el.status === 'OPEN'
+        ? "text-xs font-bold px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800"
+        : "text-xs font-bold px-3 py-1 rounded-full bg-rose-950 text-rose-400 border border-rose-800";
 
-    async function createUser() {
-      const roll = document.getElementById('uRoll').value;
-      const name = document.getElementById('uName').value;
-      const role = document.getElementById('uRole').value;
+      const cands = appState.candidates.filter(c => c.electionId === el.id);
+      const container = document.getElementById('cards3DContainer');
+      container.innerHTML = '';
 
-      await fetch('/api/users', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ roll, name, role })
-      });
-      alert('User created successfully');
-    }
-
-    async function selectStudentElection(election_id) {
-      activeElectionId = election_id;
-      const resE = await fetch('/api/elections');
-      const elections = await resE.json();
-      const el = elections.find(e => e.id === election_id);
-
-      const det = document.getElementById('selectedElectionDetails');
-      det.classList.remove('hidden');
-      det.innerHTML = `<p class="font-bold text-white">${el.title}</p><p>Description: ${el.description || 'N/A'}</p><p>Deadline: ${el.deadline}</p><p>Status: <span class="font-bold ${el.status === 'OPEN' ? 'text-emerald-400' : 'text-rose-400'}">${el.status}</span></p>`;
-
-      const resC = await fetch('/api/candidates?election_id=' + election_id);
-      const candidates = await resC.json();
-      const accepted = candidates.filter(c => c.status === 'ACCEPTED');
-      const list = document.getElementById('nomineesList');
-      list.innerHTML = '';
-
-      if (accepted.length === 0 || el.status !== 'OPEN') {
-        list.innerHTML = `<p class="text-xs text-rose-400 font-semibold">No approved candidate nominees for this election yet or election is CLOSED.</p>`;
+      if (cands.length === 0) {
+        container.innerHTML = `<div class="col-span-2 bg-slate-900 p-8 rounded-2xl border border-slate-800 text-center text-xs text-slate-400">No approved candidate profiles published for this election yet.</div>`;
         return;
       }
 
-      accepted.forEach(c => {
-        list.innerHTML += `
-          <div class="p-3 bg-slate-950 rounded border border-slate-800 flex justify-between items-center">
-            <div>
-              <p class="font-bold text-white text-sm">${c.name}</p>
-              <p class="text-xs text-slate-400">"${c.manifesto}"</p>
+      cands.forEach(c => {
+        container.innerHTML += `
+          <div class="card-3d bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/40 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="text-4xl bg-slate-950 p-2.5 rounded-xl border border-slate-800">${c.avatar || '🧑‍💼'}</span>
+                  <div>
+                    <h3 class="text-lg font-bold text-white">${c.name}</h3>
+                    <p class="text-[11px] text-indigo-400 font-semibold">${c.department}</p>
+                  </div>
+                </div>
+                <span class="text-xs font-black px-3 py-1 bg-indigo-950 text-indigo-300 border border-indigo-800 rounded-lg">${c.votes} Votes</span>
+              </div>
+              <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800/80">
+                <p class="text-xs font-bold text-amber-400 italic">"${c.slogan}"</p>
+                <p class="text-xs text-slate-300 mt-2 leading-relaxed">${c.manifesto}</p>
+              </div>
             </div>
-            <button onclick="submitStudentVote('${c.id}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-xs font-semibold cursor-pointer">
-              Vote Candidate
-            </button>
+            <div class="pt-2 flex justify-between items-center border-t border-slate-800/80 text-[11px] text-slate-400">
+              <span>ID: ${c.candId}</span>
+              <button onclick="openLoginModal('STUDENT')" class="text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer">Login as Student to Vote →</button>
+            </div>
           </div>`;
       });
     }
 
-    async function submitStudentVote(candidate_id) {
-      const msg = document.getElementById('voteStatusMsg');
-      const voter_id = activeUser ? activeUser.id : 'STUDENT001';
+    // Login Modal Handlers
+    function openLoginModal(role) {
+      modalRole = role;
+      document.getElementById('modalErrorMsg').classList.add('hidden');
+      document.getElementById('loginModal').classList.remove('hidden');
 
-      try {
-        const res = await fetch('/api/vote', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ voter_id, candidate_id, election_id: activeElectionId })
-        });
-        const data = await res.json();
-        if (res.ok) {
-          msg.className = 'text-xs font-semibold text-emerald-400';
-          msg.innerText = 'Vote Cast Successfully!';
-        } else {
-          msg.className = 'text-xs font-semibold text-rose-400';
-          msg.innerText = data.error;
-        }
-        syncGlobalState();
-      } catch(e) {
-        msg.className = 'text-xs font-semibold text-rose-400';
-        msg.innerText = 'Failed to submit vote.';
+      if (role === 'STUDENT') {
+        document.getElementById('modalLoginTitle').innerText = "🎓 Student Portal Login";
+        document.getElementById('modalIdLabel').innerText = "Student Roll ID (e.g. STUDENT001)";
+        document.getElementById('modalUserId').value = "STUDENT001";
+        document.getElementById('modalPassword').value = "123";
+      } else if (role === 'CANDIDATE') {
+        document.getElementById('modalLoginTitle').innerText = "📝 Candidate Portal Login";
+        document.getElementById('modalIdLabel').innerText = "Approved Candidate ID (e.g. CAND-101)";
+        document.getElementById('modalUserId').value = "CAND-101";
+        document.getElementById('modalPassword').value = "pass101";
+      } else {
+        document.getElementById('modalLoginTitle').innerText = "⚙️ Administrative Login";
+        document.getElementById('modalIdLabel').innerText = "Admin ID";
+        document.getElementById('modalUserId').value = "ADMIN001";
+        document.getElementById('modalPassword').value = "admin";
       }
     }
 
-    const evtSource = new EventSource('/api/events');
-    evtSource.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      const log = document.getElementById('eventsLog');
-      if (log) {
-        const div = document.createElement('div');
-        div.innerText = `[${new Date().toLocaleTimeString()}] ${data.event.toUpperCase()} - ${JSON.stringify(data)}`;
-        log.prepend(div);
-      }
-      if (data.event === 'poll_state_changed') syncGlobalState();
-    };
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
 
-    setInterval(() => { syncGlobalState(); }, 3000);
-    syncGlobalState();
+    async function submitLogin() {
+      const id = document.getElementById('modalUserId').value.trim();
+      const password = document.getElementById('modalPassword').value.trim();
+      const errEl = document.getElementById('modalErrorMsg');
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: modalRole, id, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errEl.innerText = data.error;
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      closeLoginModal();
+      document.getElementById('btnLogout').classList.remove('hidden');
+
+      if (modalRole === 'STUDENT') {
+        currentSession = { role: 'STUDENT', user: data.user };
+        document.getElementById('headerSubtitle').innerText = `${data.user.name} (${data.user.id})`;
+        showSection('student-dashboard');
+        refreshStudentDashboard();
+      } else if (modalRole === 'CANDIDATE') {
+        currentSession = { role: 'CANDIDATE', candidate: data.candidate };
+        document.getElementById('headerSubtitle').innerText = `Candidate: ${data.candidate.name} (${data.candidate.candId})`;
+        document.getElementById('candWelcomeTitle').innerText = `📝 Profile Studio — ${data.candidate.name}`;
+        document.getElementById('candAvatarInput').value = data.candidate.avatar || '🧑‍💼';
+        document.getElementById('candDeptInput').value = data.candidate.department || '';
+        document.getElementById('candSloganInput').value = data.candidate.slogan || '';
+        document.getElementById('candManifestoInput').value = data.candidate.manifesto || '';
+        showSection('candidate-dashboard');
+      } else if (modalRole === 'ADMIN') {
+        currentSession = { role: 'ADMIN', user: data.user };
+        document.getElementById('headerSubtitle').innerText = "System Administrator";
+        showSection('admin-dashboard');
+        renderAdminDashboard();
+      }
+    }
+
+    function logout() {
+      currentSession = null;
+      document.getElementById('btnLogout').classList.add('hidden');
+      document.getElementById('headerSubtitle').innerText = "Campus Elections & Governance";
+      resetHome();
+    }
+
+    // Student Actions
+    async function refreshStudentDashboard() {
+      if (!currentSession || currentSession.role !== 'STUDENT') return;
+      document.getElementById('studentWelcome').innerText = `🎓 Welcome, ${currentSession.user.name}`;
+
+      const res = await fetch('/api/student/' + currentSession.user.id);
+      const data = await res.json();
+
+      // Check if Admin approved their candidacy & issued credentials
+      const credBox = document.getElementById('approvedCredentialsBox');
+      if (data.user.candidateCredentials) {
+        credBox.classList.remove('hidden');
+        document.getElementById('credElectionTitle').innerText = data.user.candidateCredentials.electionTitle || "Campus Election";
+        document.getElementById('credCandId').innerText = data.user.candidateCredentials.candId;
+        document.getElementById('credCandPass').innerText = data.user.candidateCredentials.candPass;
+      } else {
+        credBox.classList.add('hidden');
+      }
+
+      // Render request statuses
+      const reqList = document.getElementById('myRequestsStatus');
+      reqList.innerHTML = data.requests.map(r => `
+        <div class="flex justify-between items-center text-xs bg-slate-950 p-2 rounded border border-slate-800">
+          <span>${r.electionTitle}</span>
+          <span class="font-bold ${r.status === 'ACCEPTED' ? 'text-emerald-400' : (r.status === 'REJECTED' ? 'text-rose-400' : 'text-amber-400')}">${r.status}</span>
+        </div>
+      `).join('');
+
+      // Populate Election Selects
+      const voteSel = document.getElementById('voteElectionSelect');
+      const reqSel = document.getElementById('reqElectionSelect');
+      const prevVoteVal = voteSel.value;
+      voteSel.innerHTML = appState.elections.map(e => `<option value="${e.id}">${e.title} (${e.status})</option>`).join('');
+      reqSel.innerHTML = appState.elections.filter(e => e.status === 'OPEN').map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+
+      if (prevVoteVal) voteSel.value = prevVoteVal;
+      if (voteSel.value) loadVoteCandidates(voteSel.value);
+    }
+
+    function loadVoteCandidates(electionId) {
+      const el = appState.elections.find(e => e.id === electionId);
+      const list = document.getElementById('voteCandidatesList');
+      const cands = appState.candidates.filter(c => c.electionId === electionId);
+
+      if (!el || el.status !== 'OPEN') {
+        list.innerHTML = `<p class="text-xs text-rose-400 font-semibold">This election is CLOSED.</p>`;
+        return;
+      }
+      if (cands.length === 0) {
+        list.innerHTML = `<p class="text-xs text-slate-400">No approved candidates in this election yet.</p>`;
+        return;
+      }
+
+      list.innerHTML = cands.map(c => `
+        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+          <div>
+            <p class="font-bold text-white text-xs">${c.avatar} ${c.name}</p>
+            <p class="text-[11px] text-slate-400">"${c.slogan}"</p>
+          </div>
+          <button onclick="castStudentVote('${c.candId}', '${electionId}')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold cursor-pointer">
+            Vote
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function castStudentVote(candId, electionId) {
+      const msg = document.getElementById('studentVoteFeedback');
+      const res = await fetch('/api/vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ voterId: currentSession.user.id, candId, electionId })
+      });
+      const data = await res.json();
+      msg.className = res.ok ? "text-xs font-bold text-emerald-400" : "text-xs font-bold text-rose-400";
+      msg.innerText = res.ok ? "✓ Vote Cast Successfully!" : data.error;
+    }
+
+    async function submitCandidacyRequest() {
+      const electionId = document.getElementById('reqElectionSelect').value;
+      const reason = document.getElementById('reqReason').value;
+      const res = await fetch('/api/candidacy/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId: currentSession.user.id, electionId, reason })
+      });
+      const data = await res.json();
+      if (!res.ok) alert(data.error);
+      else {
+        document.getElementById('reqReason').value = '';
+        refreshStudentDashboard();
+      }
+    }
+
+    // Candidate Profile Save
+    async function saveCandidateProfile() {
+      const payload = {
+        candId: currentSession.candidate.candId,
+        avatar: document.getElementById('candAvatarInput').value,
+        department: document.getElementById('candDeptInput').value,
+        slogan: document.getElementById('candSloganInput').value,
+        manifesto: document.getElementById('candManifestoInput').value
+      };
+      const res = await fetch('/api/candidate/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        document.getElementById('candSaveMsg').innerText = "✓ Profile published live to Homepage 3D Cards!";
+      }
+    }
+
+    // Admin Actions
+    function renderAdminDashboard() {
+      document.getElementById('dbModeBadge').innerText = appState.dbMode || "Cloud Synced";
+
+      const reqContainer = document.getElementById('adminRequestsList');
+      reqContainer.innerHTML = appState.candidacyRequests.length === 0
+        ? `<p class="text-xs text-slate-400">No candidacy requests.</p>`
+        : appState.candidacyRequests.map(r => `
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex flex-wrap justify-between items-center gap-3">
+            <div>
+              <p class="text-xs font-bold text-white">${r.studentName} (${r.studentId}) → <span class="text-indigo-400">${r.electionTitle}</span></p>
+              <p class="text-[11px] text-slate-400">Note: "${r.reason}"</p>
+            </div>
+            ${r.status === 'PENDING' ? `
+              <div class="flex gap-2">
+                <button onclick="reviewRequest('${r.id}', 'ACCEPTED')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-semibold cursor-pointer">Accept & Issue ID</button>
+                <button onclick="reviewRequest('${r.id}', 'REJECTED')" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded text-xs font-semibold cursor-pointer">Reject</button>
+              </div>
+            ` : `<span class="text-xs font-bold ${r.status === 'ACCEPTED' ? 'text-emerald-400' : 'text-rose-400'}">${r.status}</span>`}
+          </div>
+        `).join('');
+
+      const elContainer = document.getElementById('adminElectionsList');
+      elContainer.innerHTML = appState.elections.map(e => {
+        const isOpen = e.status === 'OPEN';
+        return `
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center">
+            <div>
+              <p class="text-xs font-bold text-white">${e.title}</p>
+              <p class="text-[11px] text-slate-400">Deadline: ${e.deadline} • Status: <strong class="${isOpen ? 'text-emerald-400' : 'text-rose-400'}">${e.status}</strong></p>
+            </div>
+            <button onclick="toggleElectionState('${e.id}', '${isOpen ? 'CLOSED' : 'OPEN'}')" class="px-3 py-1.5 ${isOpen ? 'bg-rose-600' : 'bg-emerald-600'} text-white rounded-lg text-xs font-semibold cursor-pointer">
+              ${isOpen ? 'Close Election' : 'Open Election'}
+            </button>
+          </div>`;
+      }).join('');
+    }
+
+    async function reviewRequest(requestId, action) {
+      await fetch('/api/candidacy/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId, action })
+      });
+    }
+
+    async function toggleElectionState(electionId, status) {
+      await fetch('/api/poll/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ electionId, status })
+      });
+    }
+
+    async function adminCreateElection() {
+      const title = document.getElementById('newElTitle').value;
+      const description = document.getElementById('newElDesc').value;
+      const deadline = document.getElementById('newElDeadline').value;
+      await fetch('/api/elections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, deadline })
+      });
+      document.getElementById('newElTitle').value = '';
+      document.getElementById('newElDesc').value = '';
+    }
+
+    async function adminCreateStudent() {
+      const id = document.getElementById('newStRoll').value;
+      const name = document.getElementById('newStName').value;
+      const password = document.getElementById('newStPass').value;
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name, password })
+      });
+      alert('Student Account Created');
+    }
+
+    // Master Real-Time Sync Function (Ensures Consistency Across All Portals)
+    async function syncAllState() {
+      try {
+        const res = await fetch('/api/state');
+        appState = await res.json();
+
+        const isGlobalOpen = appState.globalStatus === 'OPEN';
+        ['Student', 'Candidate', 'Admin'].forEach(p => {
+          const badge = document.getElementById('badge' + p);
+          if (badge) {
+            badge.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
+            badge.className = isGlobalOpen
+              ? "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800"
+              : "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-950 text-rose-400 border border-rose-800";
+          }
+        });
+
+        const sGlobal = document.getElementById('studentGlobalStatus');
+        if (sGlobal) {
+          sGlobal.innerText = isGlobalOpen ? 'OPEN' : 'CLOSED';
+          sGlobal.className = isGlobalOpen
+            ? "text-xs font-bold px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800"
+            : "text-xs font-bold px-3 py-1 rounded-full bg-rose-950 text-rose-400 border border-rose-800";
+        }
+
+        // Populate Ongoing Elections Dropdown & Sidebar Select
+        const ddList = document.getElementById('ongoingDropdownList');
+        const sbSel = document.getElementById('sidebarElectionSelect');
+        ddList.innerHTML = appState.elections.map(e => `
+          <button onclick="selectElectionForShowcase('${e.id}')" class="w-full px-4 py-3 text-left hover:bg-slate-800 flex justify-between items-center text-xs cursor-pointer">
+            <span class="font-bold text-white">${e.title}</span>
+            <span class="text-[10px] font-bold ${e.status === 'OPEN' ? 'text-emerald-400' : 'text-rose-400'}">${e.status}</span>
+          </button>
+        `).join('');
+
+        sbSel.innerHTML = appState.elections.map(e => `<option value="${e.id}">${e.title} (${e.status})</option>`).join('');
+        if (selectedShowcaseElectionId) sbSel.value = selectedShowcaseElectionId;
+
+        renderShowcaseCards();
+        if (currentSession?.role === 'STUDENT') refreshStudentDashboard();
+        if (currentSession?.role === 'ADMIN') renderAdminDashboard();
+      } catch (e) {}
+    }
+
+    const evtSource = new EventSource('/api/events');
+    evtSource.onmessage = () => syncAllState();
+
+    syncAllState();
   </script>
 </body>
 </html>
