@@ -43,7 +43,7 @@
   <!-- MAIN WORKSPACE WRAPPER -->
   <div id="mainWorkspace" class="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8">
 
-    <!-- PORTAL LOGIN CARDS (Shifts to Left Sidebar when Ongoing Election Dropdown is clicked) -->
+    <!-- PORTAL LOGIN CARDS (Hidden completely once logged into any portal) -->
     <aside id="portalSidebar" class="w-full sidebar-transition space-y-6">
       <div id="heroHeading" class="text-center space-y-3 py-4">
         <h2 class="text-3xl md:text-4xl font-black text-white">Campus Elections & Governance</h2>
@@ -121,7 +121,7 @@
       </div>
     </aside>
 
-    <!-- RIGHT / MAIN CONTENT PANEL (3D Candidate Cards Showcase OR Active Logged-in Portal) -->
+    <!-- RIGHT / MAIN CONTENT PANEL -->
     <main id="dynamicMainStage" class="hidden flex-1 space-y-6">
       
       <!-- A. 3D CANDIDATE PROFILE CARDS SHOWCASE -->
@@ -140,7 +140,7 @@
         <div id="cards3DContainer" class="perspective-container grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </section>
 
-      <!-- B. STUDENT DASHBOARD (Vote + Request Candidacy + View Approved Credentials) -->
+      <!-- B. STUDENT DASHBOARD -->
       <section id="view-student-dashboard" class="hidden space-y-6">
         <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex justify-between items-center">
           <div>
@@ -153,7 +153,7 @@
         <!-- Approved Candidate Credentials Notification Banner -->
         <div id="approvedCredentialsBox" class="hidden bg-gradient-to-r from-emerald-950 to-slate-900 border border-emerald-600 p-5 rounded-2xl space-y-2 shadow-lg">
           <p class="text-xs font-bold uppercase tracking-wider text-emerald-400">🎉 Candidacy Request Approved!</p>
-          <p class="text-sm text-white">Your nomination for <strong id="credElectionTitle"></strong> has been accepted by Admin. Use these credentials in the <strong>Candidate Portal</strong> to build your public profile:</p>
+          <p class="text-sm text-white">Your nomination for <strong id="credElectionTitle"></strong> has been accepted. Logout and use these credentials in the <strong>Candidate Portal</strong> to build your profile:</p>
           <div class="flex flex-wrap gap-4 pt-2 text-xs font-mono">
             <span class="bg-slate-950 px-3 py-1.5 rounded border border-emerald-700 text-emerald-300">Candidate ID: <strong id="credCandId"></strong></span>
             <span class="bg-slate-950 px-3 py-1.5 rounded border border-emerald-700 text-emerald-300">Password: <strong id="credCandPass"></strong></span>
@@ -255,7 +255,7 @@
           <div id="adminElectionsList" class="space-y-3"></div>
         </div>
 
-        <!-- Create New Election & Student -->
+        <!-- Create New Election & Register New User (Stored in MongoDB) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
             <h3 class="font-bold text-white text-sm">Create New Election</h3>
@@ -266,11 +266,32 @@
           </div>
 
           <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
-            <h3 class="font-bold text-white text-sm">Register New Student</h3>
-            <input type="text" id="newStRoll" placeholder="Roll ID (e.g. STUDENT003)" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
-            <input type="text" id="newStName" placeholder="Student Full Name" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
-            <input type="text" id="newStPass" placeholder="Password" value="123" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
-            <button onclick="adminCreateStudent()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold cursor-pointer">Create Student Account</button>
+            <h3 class="font-bold text-white text-sm">Register New User (Saved to MongoDB)</h3>
+            <input type="text" id="newStRoll" placeholder="User ID (e.g. STUDENT003)" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <input type="text" id="newStName" placeholder="Full Name" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <input type="text" id="newStPass" placeholder="Password" class="w-full bg-slate-950 border border-slate-800 rounded p-2 text-xs text-white">
+            <button onclick="adminCreateStudent()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-semibold cursor-pointer">Save Account to MongoDB</button>
+          </div>
+        </div>
+
+        <!-- LIVE VOTE AUDIT TRAIL (Kisne, Kab, Kaha Vote Kiya) -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-white text-md">📜 Complete Vote Audit Log (MongoDB Cloud Synced)</h3>
+            <span id="totalVotesCountBadge" class="text-xs font-bold px-2.5 py-1 rounded bg-indigo-950 text-indigo-400 border border-indigo-800">0 Total Votes</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300 border-collapse">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400 uppercase text-[11px]">
+                  <th class="py-2 px-3">Voter (ID & Name)</th>
+                  <th class="py-2 px-3">Election</th>
+                  <th class="py-2 px-3">Voted For Candidate</th>
+                  <th class="py-2 px-3">Date & Time (IST)</th>
+                </tr>
+              </thead>
+              <tbody id="adminVoteAuditTable" class="divide-y divide-slate-800/70"></tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -298,43 +319,68 @@
     </main>
   </div>
 
-  <!-- LOGIN MODAL -->
+  <!-- BOTTOM FOOTER WITH DEMO CREDENTIALS REFERENCE -->
+  <footer class="bg-slate-900/80 border-t border-slate-800 px-8 py-5 mt-12">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400">
+      <div>
+        <span class="font-bold text-white">VOTONIC</span> — Cloud-Synced Campus Governance & Election Engine
+      </div>
+      <div class="flex flex-wrap gap-4 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800 font-mono text-[11px]">
+        <span><strong class="text-indigo-400">Student:</strong> STUDENT001 / 123</span>
+        <span class="text-slate-600">|</span>
+        <span><strong class="text-purple-400">Candidate:</strong> CAND-101 / pass101</span>
+        <span class="text-slate-600">|</span>
+        <span><strong class="text-amber-400">Admin:</strong> ADMIN001 / admin</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- LOGIN MODAL (Inputs always open empty—never pre-filled) -->
   <div id="loginModal" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 id="modalLoginTitle" class="text-lg font-bold text-white">Portal Login</h3>
         <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white text-sm cursor-pointer">✕</button>
       </div>
-      <div class="space-y-4">
+      <form onsubmit="event.preventDefault(); submitLogin();" autocomplete="off" class="space-y-4">
         <div>
           <label id="modalIdLabel" class="block text-xs text-slate-400 mb-1">User ID</label>
-          <input type="text" id="modalUserId" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
+          <input type="text" id="modalUserId" autocomplete="off" placeholder="Enter your ID..." required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
         </div>
         <div>
           <label class="block text-xs text-slate-400 mb-1">Password</label>
-          <input type="password" id="modalPassword" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
+          <input type="password" id="modalPassword" autocomplete="new-password" placeholder="Enter your password..." required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white">
         </div>
         <p id="modalErrorMsg" class="text-xs text-rose-400 font-semibold hidden"></p>
-        <button onclick="submitLogin()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
+        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-xl cursor-pointer">
           Authenticate & Enter Portal
         </button>
-      </div>
+      </form>
     </div>
   </div>
 
   <script>
-    let appState = { globalStatus: 'OPEN', elections: [], candidates: [], candidacyRequests: [] };
-    let currentSession = null; // { role, user, candidate }
+    let appState = { globalStatus: 'OPEN', elections: [], candidates: [], candidacyRequests: [], votes: [] };
+    let currentSession = null;
     let modalRole = 'STUDENT';
     let selectedShowcaseElectionId = null;
 
-    // Layout Controller: Shift Login Cards to Left Sidebar
+    // Shift Login Cards to Left Sidebar (Only when not logged in)
     function shiftPortalsToSidebar() {
       const sidebar = document.getElementById('portalSidebar');
+      const mainStage = document.getElementById('dynamicMainStage');
+
+      if (currentSession) {
+        // Hide ALL login portals completely when logged in
+        sidebar.classList.add('hidden');
+        mainStage.classList.remove('hidden');
+        return;
+      }
+
+      sidebar.classList.remove('hidden');
       const grid = document.getElementById('portalCardsGrid');
       const hero = document.getElementById('heroHeading');
       const switcher = document.getElementById('sidebarElectionSwitcher');
-      const mainStage = document.getElementById('dynamicMainStage');
 
       sidebar.className = "w-full lg:w-80 shrink-0 sidebar-transition space-y-4";
       grid.className = "grid grid-cols-1 gap-4";
@@ -356,6 +402,7 @@
       const switcher = document.getElementById('sidebarElectionSwitcher');
       const mainStage = document.getElementById('dynamicMainStage');
 
+      sidebar.classList.remove('hidden');
       sidebar.className = "w-full sidebar-transition space-y-6";
       grid.className = "grid grid-cols-1 md:grid-cols-3 gap-6";
       hero.classList.remove('hidden');
@@ -373,8 +420,7 @@
     }
 
     function toggleElectionDropdown() {
-      const menu = document.getElementById('ongoingDropdownMenu');
-      menu.classList.toggle('hidden');
+      document.getElementById('ongoingDropdownMenu').classList.toggle('hidden');
     }
 
     function selectElectionForShowcase(electionId) {
@@ -428,33 +474,29 @@
             </div>
             <div class="pt-2 flex justify-between items-center border-t border-slate-800/80 text-[11px] text-slate-400">
               <span>ID: ${c.candId}</span>
-              <button onclick="openLoginModal('STUDENT')" class="text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer">Login as Student to Vote →</button>
+              ${!currentSession ? `<button onclick="openLoginModal('STUDENT')" class="text-indigo-400 hover:text-indigo-300 font-bold cursor-pointer">Login as Student to Vote →</button>` : ''}
             </div>
           </div>`;
       });
     }
 
-    // Login Modal Handlers
+    // Login Modal Handlers (Inputs strictly cleared on open)
     function openLoginModal(role) {
       modalRole = role;
       document.getElementById('modalErrorMsg').classList.add('hidden');
+      document.getElementById('modalUserId').value = "";
+      document.getElementById('modalPassword').value = "";
       document.getElementById('loginModal').classList.remove('hidden');
 
       if (role === 'STUDENT') {
         document.getElementById('modalLoginTitle').innerText = "🎓 Student Portal Login";
-        document.getElementById('modalIdLabel').innerText = "Student Roll ID (e.g. STUDENT001)";
-        document.getElementById('modalUserId').value = "STUDENT001";
-        document.getElementById('modalPassword').value = "123";
+        document.getElementById('modalIdLabel').innerText = "Student Roll ID";
       } else if (role === 'CANDIDATE') {
         document.getElementById('modalLoginTitle').innerText = "📝 Candidate Portal Login";
-        document.getElementById('modalIdLabel').innerText = "Approved Candidate ID (e.g. CAND-101)";
-        document.getElementById('modalUserId').value = "CAND-101";
-        document.getElementById('modalPassword').value = "pass101";
+        document.getElementById('modalIdLabel').innerText = "Approved Candidate ID";
       } else {
         document.getElementById('modalLoginTitle').innerText = "⚙️ Administrative Login";
-        document.getElementById('modalIdLabel').innerText = "Admin ID";
-        document.getElementById('modalUserId').value = "ADMIN001";
-        document.getElementById('modalPassword').value = "admin";
+        document.getElementById('modalIdLabel').innerText = "Admin User ID";
       }
     }
 
@@ -520,7 +562,6 @@
       const res = await fetch('/api/student/' + currentSession.user.id);
       const data = await res.json();
 
-      // Check if Admin approved their candidacy & issued credentials
       const credBox = document.getElementById('approvedCredentialsBox');
       if (data.user.candidateCredentials) {
         credBox.classList.remove('hidden');
@@ -531,7 +572,6 @@
         credBox.classList.add('hidden');
       }
 
-      // Render request statuses
       const reqList = document.getElementById('myRequestsStatus');
       reqList.innerHTML = data.requests.map(r => `
         <div class="flex justify-between items-center text-xs bg-slate-950 p-2 rounded border border-slate-800">
@@ -540,7 +580,6 @@
         </div>
       `).join('');
 
-      // Populate Election Selects
       const voteSel = document.getElementById('voteElectionSelect');
       const reqSel = document.getElementById('reqElectionSelect');
       const prevVoteVal = voteSel.value;
@@ -587,7 +626,7 @@
       });
       const data = await res.json();
       msg.className = res.ok ? "text-xs font-bold text-emerald-400" : "text-xs font-bold text-rose-400";
-      msg.innerText = res.ok ? "✓ Vote Cast Successfully!" : data.error;
+      msg.innerText = res.ok ? `✓ Vote Cast Successfully at ${data.vote.formattedTime}!` : data.error;
     }
 
     async function submitCandidacyRequest() {
@@ -606,7 +645,6 @@
       }
     }
 
-    // Candidate Profile Save
     async function saveCandidateProfile() {
       const payload = {
         candId: currentSession.candidate.candId,
@@ -661,6 +699,21 @@
             </button>
           </div>`;
       }).join('');
+
+      // Render Vote Audit Trail Table
+      const votes = appState.votes || [];
+      document.getElementById('totalVotesCountBadge').innerText = `${votes.length} Recorded Votes`;
+      const auditBody = document.getElementById('adminVoteAuditTable');
+      auditBody.innerHTML = votes.length === 0
+        ? `<tr><td colspan="4" class="py-4 text-center text-slate-500">No votes cast yet.</td></tr>`
+        : [...votes].reverse().map(v => `
+          <tr>
+            <td class="py-2.5 px-3 font-semibold text-white">${v.voterName} <span class="text-slate-400 font-mono">(${v.voterId})</span></td>
+            <td class="py-2.5 px-3 text-indigo-400">${v.electionTitle}</td>
+            <td class="py-2.5 px-3 text-emerald-400 font-semibold">${v.candName} (${v.candId})</td>
+            <td class="py-2.5 px-3 font-mono text-[11px] text-slate-400">${v.formattedTime || v.timestamp}</td>
+          </tr>
+        `).join('');
     }
 
     async function reviewRequest(requestId, action) {
@@ -693,18 +746,24 @@
     }
 
     async function adminCreateStudent() {
-      const id = document.getElementById('newStRoll').value;
-      const name = document.getElementById('newStName').value;
-      const password = document.getElementById('newStPass').value;
-      await fetch('/api/users', {
+      const id = document.getElementById('newStRoll').value.trim();
+      const name = document.getElementById('newStName').value.trim();
+      const password = document.getElementById('newStPass').value.trim();
+      const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, name, password })
       });
-      alert('Student Account Created');
+      const data = await res.json();
+      if (!res.ok) alert(data.error);
+      else {
+        document.getElementById('newStRoll').value = '';
+        document.getElementById('newStName').value = '';
+        document.getElementById('newStPass').value = '';
+        alert('Account created and saved to MongoDB!');
+      }
     }
 
-    // Master Real-Time Sync Function (Ensures Consistency Across All Portals)
     async function syncAllState() {
       try {
         const res = await fetch('/api/state');
@@ -729,7 +788,6 @@
             : "text-xs font-bold px-3 py-1 rounded-full bg-rose-950 text-rose-400 border border-rose-800";
         }
 
-        // Populate Ongoing Elections Dropdown & Sidebar Select
         const ddList = document.getElementById('ongoingDropdownList');
         const sbSel = document.getElementById('sidebarElectionSelect');
         ddList.innerHTML = appState.elections.map(e => `

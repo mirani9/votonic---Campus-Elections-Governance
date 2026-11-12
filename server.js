@@ -11,7 +11,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Cloud NoSQL Connection (Optional: Set MONGO_URI in Render/Environment for Cloud MongoDB Atlas)
 const MONGO_URI = process.env.MONGO_URI || "";
 let useCloudDB = false;
 
@@ -28,7 +27,7 @@ let db = {
   users: [
     { id: "ADMIN001", name: "System Admin", role: "ADMIN", password: "admin" },
     { id: "STUDENT001", name: "Alex Mercer", role: "STUDENT", password: "123", candidateCredentials: null },
-    { id: "STUDENT002", name: "Riya Sharma", role: "STUDENT", password: "123", candidateCredentials: { candId: "CAND-101", candPass: "pass101", electionId: "el-2" } }
+    { id: "STUDENT002", name: "Riya Sharma", role: "STUDENT", password: "123", candidateCredentials: { candId: "CAND-101", candPass: "pass101", electionId: "el-2", electionTitle: "Cultural Club Head" } }
   ],
   elections: [
     { id: "el-1", title: "Sports Secretary 2027", description: "Lead campus athletics & tournaments", deadline: "2026-11-20", status: "CLOSED" },
@@ -51,7 +50,7 @@ let db = {
       votes: 24
     }
   ],
-  votes: []
+  votes: [] // Stores { voterId, voterName, candId, candName, electionId, electionTitle, timestamp, formattedTime }
 };
 
 async function initDB() {
@@ -101,11 +100,13 @@ app.get('/api/state', (req, res) => {
     elections: db.elections,
     candidates: db.candidates,
     candidacyRequests: db.candidacyRequests,
+    votes: db.votes,
+    usersCount: db.users.length,
     dbMode: useCloudDB ? "MongoDB Atlas Cloud" : "Persistent Local Store"
   });
 });
 
-// 2. Authentication (Student, Candidate, Admin)
+// 2. Authentication (Checks MongoDB-synced users & candidateCredentials)
 app.post('/api/login', (req, res) => {
   const { role, id, password } = req.body;
   if (role === 'ADMIN') {
@@ -127,7 +128,7 @@ app.post('/api/login', (req, res) => {
   res.status(400).json({ error: "Invalid role" });
 });
 
-// 3. Get Updated Student Profile (for checking approval & credentials)
+// 3. Get Updated Student Profile
 app.get('/api/student/:id', (req, res) => {
   const student = db.users.find(u => u.id === req.params.id);
   if (!student) return res.status(404).json({ error: "Not found" });
@@ -160,9 +161,9 @@ app.post('/api/candidacy/request', async (req, res) => {
   res.json({ status: "SUCCESS", request: newReq });
 });
 
-// 5. Admin Approves / Rejects Candidacy -> Generates Candidate ID & Password
+// 5. Admin Approves / Rejects Candidacy -> Saves generated Candidate ID & Password in MongoDB
 app.post('/api/candidacy/review', async (req, res) => {
-  const { requestId, action } = req.body; // ACCEPTED or REJECTED
+  const { requestId, action } = req.body;
   const request = db.candidacyRequests.find(r => r.id === requestId);
   if (!request) return res.status(404).json({ error: "Request not found" });
 
@@ -200,7 +201,7 @@ app.post('/api/candidacy/review', async (req, res) => {
   res.json({ status: "SUCCESS" });
 });
 
-// 6. Candidate Updates Public Profile (Shown on Homepage 3D Cards)
+// 6. Candidate Updates Public Profile
 app.post('/api/candidate/profile', async (req, res) => {
   const { candId, slogan, manifesto, department, avatar } = req.body;
   const cand = db.candidates.find(c => c.candId === candId);
@@ -216,7 +217,7 @@ app.post('/api/candidate/profile', async (req, res) => {
   res.json({ status: "SUCCESS", candidate: cand });
 });
 
-// 7. Admin Election Controls (Global & Per-Election)
+// 7. Admin Election Controls
 app.post('/api/poll/toggle', async (req, res) => {
   const { electionId, status } = req.body;
   if (electionId === 'ALL') {
@@ -246,16 +247,20 @@ app.post('/api/elections', async (req, res) => {
   res.json({ status: "SUCCESS" });
 });
 
+// 8. Register New User (Persists ID & Password directly in MongoDB)
 app.post('/api/users', async (req, res) => {
-  const { id, name, password } = req.body;
-  if (!id || !name) return res.status(400).json({ error: "ID and Name required" });
-  db.users.push({ id, name, role: "STUDENT", password: password || "123", candidateCredentials: null });
+  const { id, name, password, role } = req.body;
+  if (!id || !name || !password) return res.status(400).json({ error: "ID, Name, and Password are required" });
+  const exists = db.users.find(u => u.id === id);
+  if (exists) return res.status(400).json({ error: "User ID already exists in database" });
+
+  db.users.push({ id, name, role: role || "STUDENT", password, candidateCredentials: null });
   await saveDB();
   broadcastEvent('state_updated', {});
   res.json({ status: "SUCCESS" });
 });
 
-// 8. Voting Endpoint
+// 9. Voting Endpoint (Logs Who voted, For Whom, Which Election, and Exact Timestamp to MongoDB)
 app.post('/api/vote', async (req, res) => {
   const { voterId, candId, electionId } = req.body;
   if (db.globalStatus === 'CLOSED') {
@@ -272,14 +277,29 @@ app.post('/api/vote', async (req, res) => {
   const cand = db.candidates.find(c => c.candId === candId && c.electionId === electionId);
   if (!cand) return res.status(404).json({ error: "Candidate not found." });
 
-  db.votes.push({ voterId, candId, electionId, timestamp: new Date().toISOString() });
+  const voter = db.users.find(u => u.id === voterId);
+  const now = new Date();
+  const formattedTime = now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'medium' });
+
+  const voteRecord = {
+    voterId,
+    voterName: voter ? voter.name : voterId,
+    candId,
+    candName: cand.name,
+    electionId,
+    electionTitle: el.title,
+    timestamp: now.toISOString(),
+    formattedTime
+  };
+
+  db.votes.push(voteRecord);
   cand.votes++;
   await saveDB();
   broadcastEvent('state_updated', {});
-  res.json({ status: "SUCCESS" });
+  res.json({ status: "SUCCESS", vote: voteRecord });
 });
 
-// 9. SSE Real-Time Stream
+// 10. SSE Real-Time Stream
 app.get('/api/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
